@@ -8,9 +8,4 @@ dist/
 .DS_Store
 
 # Legacy PHP application kept locally for reference during migration.
-/*.php
-/PHPMailer/
-/assets/
-/uploads/
-/SourceCode.sql
-/.htaccess
+/legacy-php/

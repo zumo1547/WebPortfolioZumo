@@ -2,6 +2,8 @@
 
 Portfolio ของ Wutthipat “Zumo” Sriyangnok เขียนใหม่ด้วย React, TypeScript และ Supabase รองรับหน้าจอคอมพิวเตอร์ แท็บเล็ต และโทรศัพท์
 
+โค้ด PHP รุ่นเดิมถูกเก็บไว้ใน `legacy-php/` เฉพาะในเครื่องเพื่อใช้อ้างอิงระหว่างย้ายระบบ โฟลเดอร์นี้ถูกตัดออกจาก Git และ Vercel เพื่อไม่ให้ config หรือ server code เก่าหลุดไปกับเว็บ production
+
 ## ระบบที่มีให้
 
 - หน้า Home, About, Projects, Contact และ Privacy

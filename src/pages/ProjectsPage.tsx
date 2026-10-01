@@ -1,18 +1,67 @@
-import { ExternalLink, Github, Images, Pencil, Plus, Search, Trash2, Upload, X, Youtube } from 'lucide-react'
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Github,
+  ImagePlus,
+  Images,
+  Link2,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  Upload,
+  X,
+  Youtube,
+} from 'lucide-react'
+import { useEffect, useMemo, useState, type FormEvent, type MouseEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { PageHeader } from '../components/PageHeader'
 import { useAuth } from '../context/AuthContext'
 import { fallbackProjects, projectTags } from '../data'
 import { projectImageUrl, supabase } from '../lib/supabase'
 import type { Project, ProjectInput, ProjectLinks } from '../types'
+import './ProjectsPage.css'
 
 const emptyInput: ProjectInput = { name: '', description: '', images: [], tags: ['งานในโรงเรียน'], links: {} }
 
-function LinkButtons({ links }: { links: ProjectLinks }) {
-  return <div className="project-links">
-    {links.github && <a href={links.github} target="_blank" rel="noreferrer" aria-label="GitHub"><Github size={16} /></a>}
-    {links.youtube && <a href={links.youtube} target="_blank" rel="noreferrer" aria-label="YouTube"><Youtube size={16} /></a>}
-    {links.drive && <a href={links.drive} target="_blank" rel="noreferrer" aria-label="Google Drive"><ExternalLink size={16} /></a>}
+const tagMeta: Record<string, { icon: string; tone: string }> = {
+  'ระดับประเทศ': { icon: '🏆', tone: 'national' },
+  'ระดับนานาชาติ': { icon: '🌏', tone: 'international' },
+  'ระดับจังหวัด': { icon: '🏛️', tone: 'provincial' },
+  'งานในโรงเรียน': { icon: '🏫', tone: 'school' },
+  'เข้าร่วมกิจกรรม': { icon: '🎯', tone: 'activity' },
+}
+
+const safeExternalUrl = (value?: string) => {
+  if (!value) return null
+  try {
+    const parsed = new URL(value)
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed.toString() : null
+  } catch {
+    return null
+  }
+}
+
+function TagBadges({ tags }: { tags: string[] }) {
+  return <div className="project-tags">
+    {tags.map((tag) => {
+      const meta = tagMeta[tag] || { icon: '📌', tone: 'default' }
+      return <span className={`project-tag tag-${meta.tone}`} key={tag}><b aria-hidden="true">{meta.icon}</b>{tag}</span>
+    })}
+  </div>
+}
+
+function LinkButtons({ links, compact = false, onClick }: { links: ProjectLinks; compact?: boolean; onClick?: (event: MouseEvent) => void }) {
+  const github = safeExternalUrl(links.github)
+  const youtube = safeExternalUrl(links.youtube)
+  const drive = safeExternalUrl(links.drive)
+  if (!github && !youtube && !drive) return null
+
+  return <div className={`project-links ${compact ? 'compact' : ''}`} onClick={onClick}>
+    {github && <a className="link-github" href={github} target="_blank" rel="noreferrer" aria-label="เปิด GitHub"><Github size={compact ? 15 : 17} /></a>}
+    {youtube && <a className="link-youtube" href={youtube} target="_blank" rel="noreferrer" aria-label="เปิด YouTube"><Youtube size={compact ? 15 : 17} /></a>}
+    {drive && <a className="link-drive" href={drive} target="_blank" rel="noreferrer" aria-label="เปิด Google Drive"><ExternalLink size={compact ? 15 : 17} /></a>}
   </div>
 }
 
@@ -28,52 +77,91 @@ export function ProjectsPage() {
   const loadProjects = async () => {
     setLoading(true)
     const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false })
-    setProjects(!error && data?.length ? data as Project[] : fallbackProjects)
+    setProjects(error ? fallbackProjects : (data as Project[] || []))
     setLoading(false)
   }
 
   useEffect(() => { void loadProjects() }, [])
 
+  useEffect(() => {
+    if (!selected && !editing) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      if (editing) setEditing(null)
+      else setSelected(null)
+    }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [selected, editing])
+
+  const normalizedQuery = query.trim().toLocaleLowerCase('th')
   const visible = useMemo(() => projects.filter((project) => {
-    const matchesQuery = `${project.name} ${project.description}`.toLocaleLowerCase().includes(query.toLocaleLowerCase())
-    const matchesTags = !activeTags.length || activeTags.every((tag) => project.tags?.includes(tag))
+    const searchable = `${project.name} ${project.description} ${(project.tags || []).join(' ')}`.toLocaleLowerCase('th')
+    const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery)
+    const matchesTags = !activeTags.length || activeTags.some((tag) => project.tags?.includes(tag))
     return matchesQuery && matchesTags
-  }), [projects, query, activeTags])
+  }), [projects, normalizedQuery, activeTags])
 
   const toggleTag = (tag: string) => setActiveTags((current) => current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag])
+  const clearFilters = () => { setQuery(''); setActiveTags([]) }
 
   return (
-    <section className="content-section page-section">
+    <section className="content-section page-section projects-page">
       <PageHeader eyebrow="PROJECT ARCHIVE" title="MY" accent="PROJECTS">ผลงานด้าน Game, IoT, Robotics, AI และ Web Development</PageHeader>
-      <div className="project-toolbar reveal">
-        <div className="search-box"><Search size={18} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="ค้นหาชื่อหรือรายละเอียดโปรเจกต์" /></div>
-        {isAdmin && <button className="button small" onClick={() => setEditing('new')}><Plus size={17} /> เพิ่มโปรเจกต์</button>}
+
+      <div className="project-controls reveal">
+        <div className="project-toolbar">
+          <label className="search-box" aria-label="ค้นหาโปรเจกต์">
+            <Search size={19} />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ค้นหาชื่อ รายละเอียด หรือแท็กโปรเจกต์" />
+            {query && <button type="button" onClick={() => setQuery('')} aria-label="ล้างคำค้นหา"><X size={16} /></button>}
+          </label>
+          {isAdmin && <button className="button small add-project-button" onClick={() => setEditing('new')}><Plus size={17} /> เพิ่มโปรเจกต์</button>}
+        </div>
+
+        <div className="tag-filters" aria-label="กรองตามระดับผลงาน">
+          {projectTags.map((tag) => {
+            const meta = tagMeta[tag]
+            const active = activeTags.includes(tag)
+            return <button className={`tag-filter tag-${meta.tone} ${active ? 'active' : ''}`} aria-pressed={active} onClick={() => toggleTag(tag)} key={tag}><span aria-hidden="true">{meta.icon}</span>{tag}</button>
+          })}
+          {(activeTags.length > 0 || query) && <button className="clear-filter" onClick={clearFilters}><X size={14} /> ล้างตัวกรอง</button>}
+        </div>
+        <div className="result-count" aria-live="polite">{loading ? 'กำลังโหลดผลงาน...' : `แสดง ${visible.length} จาก ${projects.length} โปรเจกต์`}</div>
       </div>
-      <div className="tag-filters reveal">
-        {projectTags.map((tag) => <button className={activeTags.includes(tag) ? 'active' : ''} onClick={() => toggleTag(tag)} key={tag}>{tag}</button>)}
-        {!!activeTags.length && <button className="clear" onClick={() => setActiveTags([])}><X size={14} /> ล้าง</button>}
-      </div>
-      <div className="result-count">{loading ? 'กำลังโหลด...' : `แสดง ${visible.length} โปรเจกต์`}</div>
-      <div className="project-grid">
+
+      {loading ? <div className="project-grid project-skeleton-grid" aria-label="กำลังโหลด">
+        {Array.from({ length: 8 }, (_, index) => <div className="project-skeleton" key={index}><i /><span /><b /></div>)}
+      </div> : <div className="project-grid">
         {visible.map((project, index) => (
-          <article className="project-card reveal" style={{ animationDelay: `${Math.min(index, 8) * 50}ms` }} key={project.id} onClick={() => setSelected(project)}>
-            <div className="project-cover">
-              <img src={projectImageUrl(project.images?.[0])} alt={project.name} loading="lazy" />
-              {project.images?.length > 1 && <span className="image-count"><Images size={14} /> {project.images.length}</span>}
-              <LinkButtons links={project.links || {}} />
-            </div>
-            <div className="project-body">
-              <div className="project-tags">{(project.tags || []).map((tag) => <span key={tag}>{tag}</span>)}</div>
-              <h2>{project.name}</h2><p>{project.description}</p>
-              {isAdmin && project.id > 0 && <button className="edit-pill" onClick={(event) => { event.stopPropagation(); setEditing(project) }}><Pencil size={13} /> Edit</button>}
-            </div>
+          <article className="project-card reveal" style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }} key={project.id}>
+            <button className="project-card-open" onClick={() => setSelected(project)} aria-label={`เปิดรายละเอียด ${project.name}`}>
+              <div className="project-cover">
+                <img src={projectImageUrl(project.images?.[0])} alt={project.name} loading="lazy" />
+                <span className="project-cover-shade" />
+                {project.images?.length > 1 && <span className="image-count"><Images size={14} /> {project.images.length}</span>}
+              </div>
+              <div className="project-body">
+                <TagBadges tags={project.tags || []} />
+                <h2>{project.name}</h2>
+                <p>{project.description}</p>
+              </div>
+            </button>
+            <LinkButtons compact links={project.links || {}} onClick={(event) => event.stopPropagation()} />
+            {isAdmin && project.id > 0 && <button className="edit-pill" onClick={() => setEditing(project)}><Pencil size={14} /> แก้ไข</button>}
           </article>
         ))}
-      </div>
-      {!loading && !visible.length && <div className="empty-state">ไม่พบโปรเจกต์ที่ค้นหา</div>}
+      </div>}
 
-      {selected && <ProjectModal project={selected} onClose={() => setSelected(null)} />}
-      {editing && isAdmin && user && <ProjectEditor project={editing === 'new' ? null : editing} userId={user.id} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); void loadProjects() }} />}
+      {!loading && !visible.length && <div className="empty-state"><Search size={32} /><h2>ไม่พบโปรเจกต์ที่ค้นหา</h2><p>ลองเปลี่ยนคำค้นหาหรือเลือกแท็กอื่น</p><button className="button secondary small" onClick={clearFilters}>ล้างตัวกรอง</button></div>}
+
+      {selected && createPortal(<div className="projects-page modal-portal"><ProjectModal project={selected} onClose={() => setSelected(null)} /></div>, document.body)}
+      {editing && isAdmin && user && createPortal(<div className="projects-page modal-portal"><ProjectEditor project={editing === 'new' ? null : editing} userId={user.id} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); void loadProjects() }} /></div>, document.body)}
     </section>
   )
 }
@@ -81,12 +169,40 @@ export function ProjectsPage() {
 function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
   const [imageIndex, setImageIndex] = useState(0)
   const images = project.images?.length ? project.images : ['/assets/Icon portfolio.png']
+  const selectImage = (offset: number) => setImageIndex((current) => (current + offset + images.length) % images.length)
+
+  useEffect(() => {
+    const changeImage = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowRight') setImageIndex((current) => (current + 1) % images.length)
+      if (event.key === 'ArrowLeft') setImageIndex((current) => (current - 1 + images.length) % images.length)
+    }
+    document.addEventListener('keydown', changeImage)
+    return () => document.removeEventListener('keydown', changeImage)
+  }, [images.length])
+
   return <div className="modal-backdrop" onMouseDown={onClose} role="presentation">
-    <article className="project-modal" onMouseDown={(e) => e.stopPropagation()}>
-      <button className="modal-close" onClick={onClose}><X /></button>
-      <div className="modal-image"><img src={projectImageUrl(images[imageIndex])} alt={project.name} /></div>
-      {images.length > 1 && <div className="thumb-row">{images.map((image, index) => <button className={index === imageIndex ? 'active' : ''} onClick={() => setImageIndex(index)} key={image}><img src={projectImageUrl(image)} alt="" /></button>)}</div>}
-      <div className="modal-content"><div className="project-tags">{project.tags?.map((tag) => <span key={tag}>{tag}</span>)}</div><h2>{project.name}</h2><p>{project.description}</p><LinkButtons links={project.links || {}} /></div>
+    <article className="project-modal" role="dialog" aria-modal="true" aria-labelledby="project-modal-title" onMouseDown={(event) => event.stopPropagation()}>
+      <header className="modal-toolbar">
+        <div><span>PROJECT DETAILS</span><strong>รายละเอียดผลงาน</strong></div>
+        <button className="modal-close" onClick={onClose} aria-label="ปิดรายละเอียดโปรเจกต์"><X /></button>
+      </header>
+      <div className="project-modal-scroll">
+        <div className="modal-image">
+          <img src={projectImageUrl(images[imageIndex])} alt={`${project.name} รูปที่ ${imageIndex + 1}`} />
+          {images.length > 1 && <>
+            <button className="gallery-arrow previous" onClick={() => selectImage(-1)} aria-label="รูปก่อนหน้า"><ChevronLeft /></button>
+            <button className="gallery-arrow next" onClick={() => selectImage(1)} aria-label="รูปถัดไป"><ChevronRight /></button>
+            <span className="gallery-count">{imageIndex + 1} / {images.length}</span>
+          </>}
+        </div>
+        {images.length > 1 && <div className="thumb-row">{images.map((image, index) => <button className={index === imageIndex ? 'active' : ''} onClick={() => setImageIndex(index)} aria-label={`ดูรูปที่ ${index + 1}`} key={`${image}-${index}`}><img src={projectImageUrl(image)} alt="" /></button>)}</div>}
+        <div className="modal-content">
+          <TagBadges tags={project.tags || []} />
+          <h2 id="project-modal-title">{project.name}</h2>
+          <p>{project.description}</p>
+          <LinkButtons links={project.links || {}} />
+        </div>
+      </div>
     </article>
   </div>
 }
@@ -99,48 +215,94 @@ function ProjectEditor({ project, userId, onClose, onSaved }: { project: Project
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setSaving(true); setError('')
+    const uploaded: string[] = []
     try {
-      const uploaded: string[] = []
-      for (const file of files.slice(0, Math.max(0, 5 - value.images.length))) {
+      if (!value.tags.length) throw new Error('กรุณาเลือก Tag อย่างน้อย 1 รายการ')
+      if (value.images.length + files.length > 5) throw new Error('รูปภาพรวมกันได้สูงสุด 5 รูป')
+
+      for (const file of files) {
         if (!file.type.startsWith('image/') || file.size > 20 * 1024 * 1024) throw new Error('รองรับไฟล์ภาพไม่เกิน 20 MB ต่อไฟล์')
-        const ext = file.name.split('.').pop()?.toLowerCase() || 'webp'
+        const ext = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'webp'
         const path = `${userId}/${crypto.randomUUID()}.${ext}`
         const { error: uploadError } = await supabase.storage.from('project-images').upload(path, file, { contentType: file.type })
         if (uploadError) throw uploadError
         uploaded.push(path)
       }
-      const payload = { ...value, images: [...value.images, ...uploaded], updated_at: new Date().toISOString() }
+
+      const cleanLinks = Object.fromEntries(Object.entries(value.links).filter(([, link]) => safeExternalUrl(link))) as ProjectLinks
+      const payload = { ...value, links: cleanLinks, images: [...value.images, ...uploaded], updated_at: new Date().toISOString() }
       const result = project
         ? await supabase.from('projects').update(payload).eq('id', project.id)
         : await supabase.from('projects').insert(payload)
       if (result.error) throw result.error
+
+      const removedImages = (project?.images || []).filter((path) => !value.images.includes(path) && !path.startsWith('/') && !/^https?:/i.test(path))
+      if (removedImages.length) await supabase.storage.from('project-images').remove(removedImages)
       onSaved()
-    } catch (caught) { setError(caught instanceof Error ? caught.message : 'บันทึกไม่สำเร็จ') }
-    finally { setSaving(false) }
+    } catch (caught) {
+      if (uploaded.length) await supabase.storage.from('project-images').remove(uploaded)
+      setError(caught instanceof Error ? caught.message : 'บันทึกไม่สำเร็จ')
+    } finally { setSaving(false) }
   }
 
   const remove = async () => {
     if (!project || !confirm(`ลบโปรเจกต์ “${project.name}” ใช่หรือไม่?`)) return
-    setSaving(true)
+    setSaving(true); setError('')
+    const { error: deleteError } = await supabase.from('projects').delete().eq('id', project.id)
+    if (deleteError) {
+      setError(deleteError.message)
+      setSaving(false)
+      return
+    }
     const storagePaths = project.images.filter((path) => !path.startsWith('/') && !/^https?:/i.test(path))
     if (storagePaths.length) await supabase.storage.from('project-images').remove(storagePaths)
-    const { error: deleteError } = await supabase.from('projects').delete().eq('id', project.id)
-    setSaving(false)
-    if (deleteError) setError(deleteError.message); else onSaved()
+    setSaving(false); onSaved()
   }
 
+  const toggleEditorTag = (tag: string) => setValue({ ...value, tags: value.tags.includes(tag) ? value.tags.filter((item) => item !== tag) : [...value.tags, tag] })
+
   return <div className="modal-backdrop" onMouseDown={onClose} role="presentation">
-    <form className="editor-modal" onSubmit={submit} onMouseDown={(e) => e.stopPropagation()}>
-      <button type="button" className="modal-close" onClick={onClose}><X /></button>
-      <div className="form-title"><Upload /><div><b>{project ? 'แก้ไขโปรเจกต์' : 'เพิ่มโปรเจกต์'}</b><span>PROJECT EDITOR</span></div></div>
-      <label>ชื่อโปรเจกต์<input required maxLength={150} value={value.name} onChange={(e) => setValue({ ...value, name: e.target.value })} /></label>
-      <label>รายละเอียด<textarea required maxLength={3000} rows={5} value={value.description} onChange={(e) => setValue({ ...value, description: e.target.value })} /></label>
-      <fieldset><legend>Tags</legend><div className="editor-tags">{projectTags.map((tag) => <label key={tag}><input type="checkbox" checked={value.tags.includes(tag)} onChange={() => setValue({ ...value, tags: value.tags.includes(tag) ? value.tags.filter((item) => item !== tag) : [...value.tags, tag] })} /> {tag}</label>)}</div></fieldset>
-      <div className="three-fields"><label>GitHub<input type="url" value={value.links.github || ''} onChange={(e) => setValue({ ...value, links: { ...value.links, github: e.target.value } })} /></label><label>YouTube<input type="url" value={value.links.youtube || ''} onChange={(e) => setValue({ ...value, links: { ...value.links, youtube: e.target.value } })} /></label><label>Google Drive<input type="url" value={value.links.drive || ''} onChange={(e) => setValue({ ...value, links: { ...value.links, drive: e.target.value } })} /></label></div>
-      {!!value.images.length && <div className="existing-images">{value.images.map((image) => <button type="button" onClick={() => setValue({ ...value, images: value.images.filter((item) => item !== image) })} key={image}><img src={projectImageUrl(image)} alt="" /><X size={14} /></button>)}</div>}
-      <label>รูปภาพ (รวมสูงสุด 5 รูป)<input type="file" accept="image/*" multiple onChange={(e) => setFiles(Array.from(e.target.files || []).slice(0, 5))} /></label>
-      {error && <div className="notice error">{error}</div>}
-      <div className="editor-actions">{project && <button type="button" className="button danger-button" onClick={() => void remove()} disabled={saving}><Trash2 size={17} /> ลบ</button>}<button className="button" disabled={saving}>{saving ? 'กำลังบันทึก...' : 'บันทึกโปรเจกต์'}</button></div>
+    <form className="editor-modal" onSubmit={submit} onMouseDown={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="editor-title">
+      <header className="modal-toolbar editor-toolbar">
+        <div className="form-title"><Upload /><div><strong id="editor-title">{project ? 'แก้ไขโปรเจกต์' : 'เพิ่มโปรเจกต์'}</strong><span>PROJECT EDITOR</span></div></div>
+        <button type="button" className="modal-close" onClick={onClose} aria-label="ปิดหน้าต่างแก้ไข"><X /></button>
+      </header>
+
+      <div className="editor-modal-scroll">
+        <section className="editor-section">
+          <div className="editor-section-title"><Pencil size={15} /><span>ข้อมูลโปรเจกต์</span></div>
+          <label>ชื่อโปรเจกต์<input required maxLength={150} value={value.name} onChange={(event) => setValue({ ...value, name: event.target.value })} placeholder="ชื่อผลงานหรือกิจกรรม" /></label>
+          <label>คำอธิบาย<textarea required maxLength={3000} rows={5} value={value.description} onChange={(event) => setValue({ ...value, description: event.target.value })} placeholder="เล่าแนวคิด บทบาท เทคโนโลยี และผลลัพธ์ของโปรเจกต์" /></label>
+        </section>
+
+        <fieldset className="editor-section editor-fieldset">
+          <legend className="editor-section-title"><span>🏷️</span><span>ระดับ / Tag</span></legend>
+          <div className="editor-tags">{projectTags.map((tag) => {
+            const meta = tagMeta[tag]
+            const checked = value.tags.includes(tag)
+            return <label className={`editor-tag tag-${meta.tone} ${checked ? 'checked' : ''}`} key={tag}><input type="checkbox" checked={checked} onChange={() => toggleEditorTag(tag)} /><i>{checked ? '✓' : ''}</i><span>{meta.icon} {tag}</span></label>
+          })}</div>
+        </fieldset>
+
+        <section className="editor-section">
+          <div className="editor-section-title"><Link2 size={15} /><span>ลิงก์โปรเจกต์</span></div>
+          <div className="editor-links">
+            <label><span><Github size={17} /> GitHub</span><input type="url" value={value.links.github || ''} onChange={(event) => setValue({ ...value, links: { ...value.links, github: event.target.value } })} placeholder="https://github.com/..." /></label>
+            <label><span><Youtube size={17} /> YouTube</span><input type="url" value={value.links.youtube || ''} onChange={(event) => setValue({ ...value, links: { ...value.links, youtube: event.target.value } })} placeholder="https://youtube.com/..." /></label>
+            <label><span><ExternalLink size={17} /> Google Drive</span><input type="url" value={value.links.drive || ''} onChange={(event) => setValue({ ...value, links: { ...value.links, drive: event.target.value } })} placeholder="https://drive.google.com/..." /></label>
+          </div>
+        </section>
+
+        <section className="editor-section">
+          <div className="editor-section-title"><Images size={15} /><span>รูปภาพโปรเจกต์ ({value.images.length + files.length}/5)</span></div>
+          {!!value.images.length && <div className="existing-images">{value.images.map((image, index) => <div className="existing-image" key={`${image}-${index}`}><img src={projectImageUrl(image)} alt={`รูปปัจจุบัน ${index + 1}`} /><button type="button" onClick={() => setValue({ ...value, images: value.images.filter((item) => item !== image) })} aria-label={`นำรูปที่ ${index + 1} ออก`}><X size={14} /></button></div>)}</div>}
+          <label className="upload-drop"><ImagePlus /><strong>เลือกรูปภาพเพิ่มเติม</strong><span>JPG, PNG, GIF หรือ WebP · ไม่เกิน 20 MB · รวมสูงสุด 5 รูป</span><input type="file" accept="image/*" multiple disabled={value.images.length >= 5} onChange={(event) => setFiles(Array.from(event.target.files || []).slice(0, 5 - value.images.length))} /></label>
+          {!!files.length && <div className="selected-files">{files.map((file) => <span key={`${file.name}-${file.size}`}>{file.name}</span>)}</div>}
+        </section>
+
+        {error && <div className="notice error">{error}</div>}
+        <div className="editor-actions">{project && <button type="button" className="button danger-button" onClick={() => void remove()} disabled={saving}><Trash2 size={17} /> ลบโปรเจกต์</button>}<button className="button" disabled={saving}>{saving ? 'กำลังบันทึก...' : 'บันทึกโปรเจกต์'}</button></div>
+      </div>
     </form>
   </div>
 }
