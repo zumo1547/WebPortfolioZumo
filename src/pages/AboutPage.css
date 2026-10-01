@@ -68,6 +68,7 @@
 .profile-build-credit span { color: #7e748b; font: .52rem 'Share Tech Mono'; letter-spacing: .1em; }
 .profile-build-credit b { margin-top: 2px; color: #ded6e7; font-size: .72rem; }
 .profile-build-credit small { margin-top: 2px; color: #867d91; font-size: .62rem; }
+.profile-build-credit em { margin-top: 4px; color: #a77fc6; font: normal .58rem 'Share Tech Mono'; }
 
 .about-page .timeline { align-content: start; }
 .timeline-heading { position: relative; z-index: 2; padding: 0 0 9px 77px; }
@@ -79,6 +80,7 @@
 .about-page .timeline-icon { transition: transform .25s, box-shadow .25s; }
 .about-page .timeline-item:hover .timeline-icon { transform: rotate(-5deg) scale(1.06); box-shadow: 0 0 22px rgba(168, 85, 247, .2); }
 
+.portfolio-build,
 .portfolio-proof,
 .achievement-board {
   margin-top: 28px;
@@ -87,6 +89,30 @@
   background: linear-gradient(145deg, rgba(17, 11, 34, .88), rgba(9, 6, 18, .92));
   overflow: hidden;
 }
+
+.portfolio-build { padding: 27px; }
+.portfolio-build > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 20px;
+}
+.portfolio-build h2 { margin: 6px 0 0; color: #f3eef9; font: 800 clamp(1.45rem, 3vw, 2rem) 'Kanit'; }
+.portfolio-build > header > p { max-width: 480px; margin: 0; color: #858092; font-size: .8rem; line-height: 1.7; text-align: right; }
+.portfolio-build-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.portfolio-build-grid article { min-width: 0; padding: 20px; border: 1px solid rgba(168, 85, 247, .14); border-radius: 15px; background: rgba(255, 255, 255, .025); transition: transform .25s, border-color .25s, background .25s; }
+.portfolio-build-grid article:hover { transform: translateY(-4px); border-color: rgba(192, 132, 252, .34); background: rgba(168, 85, 247, .055); }
+.portfolio-build-top { display: flex; align-items: center; justify-content: space-between; }
+.portfolio-build-top span { color: #6f667a; font: .62rem 'Share Tech Mono'; }
+.portfolio-build-top svg { width: 22px; color: #c084fc; }
+.portfolio-build-grid h3 { margin: 17px 0 5px; color: #e8e1f0; font: 700 .92rem 'Kanit'; }
+.portfolio-build-grid b { display: block; color: #bc7ef0; font: .61rem 'Share Tech Mono'; line-height: 1.5; }
+.portfolio-build-grid p { margin: 12px 0 0; color: #817989; font-size: .73rem; line-height: 1.7; }
+.ai-disclosure { display: flex; align-items: flex-start; gap: 12px; margin-top: 12px; padding: 15px 17px; border: 1px solid rgba(56, 189, 248, .16); border-radius: 14px; background: rgba(56, 189, 248, .04); }
+.ai-disclosure svg { flex: none; width: 21px; color: #38bdf8; }
+.ai-disclosure p { margin: 0; color: #888293; font-size: .75rem; line-height: 1.75; }
+.ai-disclosure strong { color: #d8d1e1; }
 
 .portfolio-proof > header {
   display: flex;
@@ -168,6 +194,7 @@
 
 @media (max-width: 860px) {
   .about-signal-strip { margin-top: -15px; }
+  .portfolio-build-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .highlight-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .highlight-grid article:nth-child(2) { border-right: 0; }
   .highlight-grid article:nth-child(-n + 2) { border-bottom: 1px solid rgba(168, 85, 247, .11); }
@@ -203,3 +230,8 @@
   .highlight-grid article:nth-child(-n + 2) { border-right: 0; border-bottom: 1px solid rgba(168, 85, 247, .11); }
   .highlight-grid article:last-child { border-bottom: 0; }
 }
+  .portfolio-build { padding: 20px 14px; }
+  .portfolio-build > header { align-items: flex-start; flex-direction: column; gap: 9px; }
+  .portfolio-build > header > p { text-align: left; }
+  .portfolio-build-grid { grid-template-columns: 1fr; }
+  .portfolio-build-grid article { padding: 18px; }

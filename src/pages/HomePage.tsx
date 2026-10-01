@@ -96,7 +96,7 @@ export function HomePage() {
             <div className="profile-code">ZUMO_1547</div>
           </div>
           <div className="float-chip chip-one hero-project-chip"><Code2 size={17} /><div><small>THIS WEBSITE</small><b>React · TypeScript · Supabase</b></div></div>
-          <div className="float-chip chip-two hero-project-chip"><Microscope size={17} /><div><small>โครงงานวิศวกรรม</small><b>เครื่องกรองไมโครไฟเบอร์ด้วย ESP32</b></div></div>
+          <div className="float-chip chip-two hero-project-chip"><Microscope size={17} /><div><small>ENGINEERING PROJECT</small><b>ESP32-Powered Microfiber Filter</b></div></div>
           <div className="float-chip chip-three hero-project-chip"><Bot size={17} /><div><small>AI &amp; ROBOTICS</small><b>Python · micro:bit · CiRA</b></div></div>
           <div className="hero-proof-card">
             <Trophy size={19} />
@@ -124,7 +124,7 @@ export function HomePage() {
       <section className="content-section home-tech-section">
         <header className="home-section-heading reveal">
           <div><span className="mono-label">// TECHNOLOGY USED IN PROJECTS</span><h2>เทคโนโลยีที่ผมใช้ทำโปรเจกต์</h2></div>
-          <p>เทคโนโลยีจากแฟ้มสะสมผลงานที่นำมาใช้เขียนโปรแกรม สร้างเกม พัฒนา AI และควบคุมฮาร์ดแวร์จริง</p>
+          <p>ผมใช้เครื่องมือแต่ละตัวกับงานจริง ตั้งแต่ทำเว็บและเกม ไปจนถึงเขียนโปรแกรมควบคุมเซนเซอร์กับบอร์ด ESP32</p>
         </header>
         <div className="tech-grid">
           {techStack.map((tech, i) => {
