@@ -57,6 +57,12 @@ export function AboutPage() {
     <section className="content-section page-section about-page">
       <PageHeader eyebrow="PROFILE DATABASE" title="ABOUT" accent="ME">เรื่องราว ทักษะ ผลงาน และเส้นทางการเรียนรู้ของผม</PageHeader>
 
+      <div className="about-signal-strip reveal" aria-label="ข้อมูลปัจจุบัน">
+        <article><span>01 / CURRENT</span><b>มัธยมศึกษาปีที่ 5</b><small>Science &amp; Innovation</small></article>
+        <article><span>02 / FOCUS</span><b>IoT · AI · Web</b><small>สร้างระบบจากปัญหาใกล้ตัว</small></article>
+        <article><span>03 / PROCESS</span><b>Build · Test · Improve</b><small>ทดลอง วัดผล และพัฒนาต่อ</small></article>
+      </div>
+
       <div className="about-grid">
         <article className="profile-panel reveal">
           <div className="panel-line" />
@@ -68,10 +74,12 @@ export function AboutPage() {
             <div className="profile-meta"><MapPin size={16} /> Samut Prakan, Thailand</div>
             <div className="profile-meta"><GraduationCap size={16} /> Nawaminthrachinuthit Triamudomsuksapattanakarn School</div>
             <div className="profile-meta"><BookOpen size={16} /> Science &amp; Innovation Program</div>
+            <div className="profile-capabilities"><span>Problem Solving</span><span>Teamwork</span><span>Rapid Learning</span></div>
           </div>
         </article>
 
         <div className="timeline">
+          <div className="timeline-heading"><span className="mono-label">// LEARNING PATH</span><b>สิ่งที่ผมกำลังพัฒนา</b></div>
           {timeline.map((item, index) => (
             <article className="timeline-item reveal" style={{ animationDelay: `${index * 80}ms` }} key={item.title}>
               <div className="timeline-icon">{item.icon}</div>

@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { Loading } from './components/Loading'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -15,8 +15,14 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage').then((module) => 
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((module) => ({ default: module.DashboardPage })))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then((module) => ({ default: module.PrivacyPage })))
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }) }, [pathname])
+  return null
+}
+
 export default function App() {
-  return <BrowserRouter><AuthProvider><Layout><Suspense fallback={<Loading />}><Routes>
+  return <BrowserRouter><ScrollToTop /><AuthProvider><Layout><Suspense fallback={<Loading />}><Routes>
     <Route path="/" element={<HomePage />} />
     <Route path="/about" element={<AboutPage />} />
     <Route path="/projects" element={<ProjectsPage />} />

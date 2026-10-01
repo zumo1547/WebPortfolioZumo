@@ -1,6 +1,77 @@
+.about-page { position: relative; }
+.about-page::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 70px;
+  left: 50%;
+  width: min(860px, 90vw);
+  height: 370px;
+  background: radial-gradient(circle, rgba(124, 58, 237, .11), transparent 68%);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.about-page .page-heading { position: relative; }
+.about-page .page-heading::after {
+  content: 'ZUMO / PROFILE';
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  color: rgba(168, 85, 247, .035);
+  font: 900 clamp(5rem, 13vw, 10rem)/1 'Kanit';
+  white-space: nowrap;
+  transform: translate(-50%, -45%);
+}
+
+.about-signal-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: -28px 0 25px;
+  border: 1px solid rgba(168, 85, 247, .17);
+  border-radius: 16px;
+  background: rgba(11, 7, 23, .82);
+  overflow: hidden;
+}
+.about-signal-strip article { min-width: 0; padding: 16px 20px; border-right: 1px solid rgba(168, 85, 247, .13); }
+.about-signal-strip article:last-child { border-right: 0; }
+.about-signal-strip span { display: block; color: #a855f7; font: .56rem 'Share Tech Mono'; letter-spacing: .11em; }
+.about-signal-strip b { display: block; margin-top: 6px; color: #ddd5e7; font-size: .82rem; }
+.about-signal-strip small { display: block; margin-top: 3px; color: #70697b; font-size: .68rem; }
+
+.about-page .about-grid { align-items: stretch; }
+.about-page .profile-panel { position: relative; transition: transform .3s, border-color .3s, box-shadow .3s; }
+.about-page .profile-panel:hover { transform: translateY(-5px); border-color: rgba(192, 132, 252, .38); box-shadow: 0 26px 55px rgba(0, 0, 0, .3); }
+.about-page .profile-panel::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #38bdf8, #ec4899, transparent);
+  opacity: .7;
+  animation: profile-scan 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes profile-scan { 0%, 100% { transform: translateY(0); opacity: 0; } 30%, 65% { opacity: .75; } 70% { transform: translateY(388px); opacity: 0; } }
+
 .about-page .profile-panel-copy p { margin-bottom: 20px; }
 .about-page .profile-meta { align-items: flex-start; }
 .about-page .profile-meta svg { flex: none; margin-top: 2px; }
+.profile-capabilities { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
+.profile-capabilities span { padding: 5px 8px; border: 1px solid rgba(56, 189, 248, .18); border-radius: 999px; background: rgba(56, 189, 248, .045); color: #8ab7ca; font-size: .62rem; }
+
+.about-page .timeline { align-content: start; }
+.timeline-heading { position: relative; z-index: 2; padding: 0 0 9px 77px; }
+.timeline-heading b { display: block; margin-top: 5px; color: #d8d1e1; font: 700 1rem 'Kanit'; }
+.about-page .timeline-item { position: relative; overflow: hidden; transition: transform .25s, border-color .25s, background .25s; }
+.about-page .timeline-item::after { content: ''; position: absolute; inset: 0 auto 0 0; width: 2px; background: linear-gradient(#a855f7, #ec4899); opacity: 0; transition: opacity .25s; }
+.about-page .timeline-item:hover { transform: translateX(7px); border-color: rgba(168, 85, 247, .35); background: rgba(168, 85, 247, .07); }
+.about-page .timeline-item:hover::after { opacity: 1; }
+.about-page .timeline-icon { transition: transform .25s, box-shadow .25s; }
+.about-page .timeline-item:hover .timeline-icon { transform: rotate(-5deg) scale(1.06); box-shadow: 0 0 22px rgba(168, 85, 247, .2); }
 
 .portfolio-proof,
 .achievement-board {
@@ -41,7 +112,9 @@
   min-width: 0;
   padding: 26px 22px 28px;
   border-right: 1px solid rgba(168, 85, 247, .11);
+  transition: background .22s, transform .22s;
 }
+.highlight-grid article:hover { z-index: 1; background: rgba(168, 85, 247, .055); transform: translateY(-4px); }
 .highlight-grid article:last-child { border-right: 0; }
 .highlight-grid strong {
   display: block;
@@ -65,7 +138,9 @@
   border-radius: 16px;
   background: rgba(255, 255, 255, .025);
   overflow: hidden;
+  transition: transform .25s, border-color .25s, box-shadow .25s;
 }
+.achievement-grid article:hover { transform: translateY(-5px); border-color: rgba(192, 132, 252, .35); box-shadow: 0 18px 38px rgba(0, 0, 0, .25); }
 .achievement-grid article::after {
   content: '';
   position: absolute;
@@ -77,17 +152,27 @@
   filter: blur(3px);
 }
 .achievement-grid article > svg { width: 29px; height: 29px; color: #c084fc; }
+.achievement-grid article:nth-child(1) > svg { color: #fbbf24; }
+.achievement-grid article:nth-child(2) > svg { color: #fb7185; }
+.achievement-grid article:nth-child(3) > svg { color: #38bdf8; }
+.achievement-grid article:nth-child(4) > svg { color: #a78bfa; }
 .achievement-grid h3 { margin: 17px 0 8px; color: #e9e2f1; font: 700 1.05rem 'Kanit'; }
 .achievement-grid p { margin: 0; color: #858092; font-size: .78rem; line-height: 1.7; }
 .achievement-rank { position: absolute; top: 20px; right: 21px; color: rgba(216, 180, 254, .24); font: 700 1.25rem 'Share Tech Mono'; }
 
 @media (max-width: 860px) {
+  .about-signal-strip { margin-top: -15px; }
   .highlight-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .highlight-grid article:nth-child(2) { border-right: 0; }
   .highlight-grid article:nth-child(-n + 2) { border-bottom: 1px solid rgba(168, 85, 247, .11); }
 }
 
 @media (max-width: 620px) {
+  .about-signal-strip { grid-template-columns: 1fr; }
+  .about-signal-strip article { border-right: 0; border-bottom: 1px solid rgba(168, 85, 247, .13); }
+  .about-signal-strip article:last-child { border-bottom: 0; }
+  .timeline-heading { padding-left: 0; }
+  .about-page .timeline::before { top: 72px; }
   .portfolio-proof > header { align-items: flex-start; flex-direction: column; gap: 10px; padding: 21px 18px 18px; }
   .portfolio-proof > header > p { text-align: left; }
   .highlight-grid article { padding: 21px 16px; }
@@ -95,6 +180,14 @@
   .achievement-board { padding: 19px 14px; }
   .achievement-grid { grid-template-columns: 1fr; }
   .achievement-grid article { min-height: 0; padding: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-page .profile-panel::after { animation: none; }
+  .about-page .profile-panel,
+  .about-page .timeline-item,
+  .highlight-grid article,
+  .achievement-grid article { transition: none; }
 }
 
 @media (max-width: 390px) {
