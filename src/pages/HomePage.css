@@ -131,9 +131,27 @@
 @media (max-width: 520px) {
   .home-intro-tags { gap: 5px; }
   .home-intro-tags span { font-size: .61rem; }
-  .hero-proof-card { right: 50%; bottom: 2px; width: min(270px, 88vw); transform: translateX(50%); }
-  .hero-project-chip { max-width: 205px; padding: 8px 9px; }
-  .hero-project-chip b { font-size: .53rem; }
+  .home-hero .hero-visual {
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 24px;
+  }
+  .home-hero .profile-frame { flex: none; margin-bottom: 10px; }
+  .home-hero .hero-project-chip,
+  .home-hero .hero-proof-card {
+    position: relative;
+    inset: auto;
+    width: min(100%, 360px);
+    max-width: none;
+    transform: none;
+  }
+  .home-hero .hero-project-chip { min-height: 54px; padding: 10px 12px; }
+  .home-hero .hero-project-chip b { font-size: .61rem; line-height: 1.45; white-space: normal; }
+  .home-hero .hero-proof-card { min-height: 66px; padding: 12px 14px; }
+  .home-hero .hero-proof-card b { white-space: normal; }
   .home-impact { padding-top: 58px; }
   .impact-card { padding: 20px; }
   .applied-skill-list > div { grid-template-columns: 1fr auto; }
