@@ -9,12 +9,18 @@ export const projectTags = [
 ] as const
 
 export const techStack = [
-  { name: 'ESP32', detail: 'Arduino / IoT', icon: '⚡' },
-  { name: 'Python', detail: 'AI / OpenCV', image: 'assets/Python-logo-notext.svg.png' },
-  { name: 'React', detail: 'TypeScript', icon: '⚛' },
-  { name: 'Supabase', detail: 'Postgres / Auth', icon: '◆' },
-  { name: 'Roblox', detail: 'Lua Studio', icon: '◈' },
-  { name: 'Unity', detail: 'C# Engine', icon: '⬡' },
+  { name: 'ESP32 / Arduino', detail: 'IoT · Sensors', icon: 'cpu' },
+  { name: 'micro:bit', detail: 'AIoT · Robotics', icon: 'circuit' },
+  { name: 'Python', detail: 'AI · OpenCV · Data', image: 'assets/Python-logo-notext.svg.png' },
+  { name: 'C++ / C#', detail: 'Embedded · Game', icon: 'code' },
+  { name: 'React', detail: 'UI · Components', icon: 'atom' },
+  { name: 'TypeScript', detail: 'Web · Type Safety', icon: 'braces' },
+  { name: 'Node.js / JavaScript', detail: 'Web · Runtime', icon: 'server' },
+  { name: 'Supabase', detail: 'Postgres · Auth · Storage', icon: 'database' },
+  { name: 'GitHub', detail: 'Git · Version Control', icon: 'github' },
+  { name: 'Unity', detail: 'C# · Game Engine', icon: 'boxes' },
+  { name: 'Roblox Studio', detail: 'Lua · Game Systems', icon: 'gamepad' },
+  { name: 'CiRA CORE', detail: 'Computer Vision', icon: 'scan' },
 ]
 
 export const fallbackProjects: Project[] = [

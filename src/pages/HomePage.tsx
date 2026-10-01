@@ -1,16 +1,25 @@
 import {
   ArrowRight,
+  Atom,
   Bot,
+  Boxes,
+  Braces,
+  CircuitBoard,
   Code2,
   Cpu,
+  Database,
   Film,
   FolderOpen,
   Gamepad2,
+  Github,
   Medal,
   Microscope,
   Radio,
+  ScanSearch,
+  ServerCog,
   Trophy,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { techStack } from '../data'
 import { assetUrl } from '../lib/supabase'
@@ -48,6 +57,20 @@ const appliedSkills = [
   ['React / TypeScript', 'Web · UI · Supabase'],
 ]
 
+const techIcons: Record<string, LucideIcon> = {
+  atom: Atom,
+  boxes: Boxes,
+  braces: Braces,
+  circuit: CircuitBoard,
+  code: Code2,
+  cpu: Cpu,
+  database: Database,
+  gamepad: Gamepad2,
+  github: Github,
+  scan: ScanSearch,
+  server: ServerCog,
+}
+
 export function HomePage() {
   return (
     <>
@@ -57,10 +80,10 @@ export function HomePage() {
           <h1>CREATIVE<br /><span>DEVELOPER</span></h1>
           <p className="hero-thai">วุฒิภัทร ศรียางนอก — นักเรียนสายวิทยาศาสตร์และนวัตกรรม<br />สร้างเกม ระบบ IoT หุ่นยนต์ AI และเว็บจากการทดลองจริง</p>
           <div className="home-intro-tags" aria-label="ข้อมูลโดยย่อ">
-            <span>มัธยมศึกษาปีที่ 5</span><span>Science &amp; Innovation</span><span>Samut Prakan</span>
+            <span>มัธยมศึกษาปีที่ 6</span><span>Science &amp; Innovation</span><span>Samut Prakan</span>
           </div>
           <div className="hero-actions">
-            <Link className="button" to="/projects"><FolderOpen size={18} /> ดูผลงาน <ArrowRight size={17} /></Link>
+            <Link className="button" to="/projects"><FolderOpen size={18} /> สำรวจโปรเจกต์ <ArrowRight size={17} /></Link>
             <Link className="button secondary" to="/about">ประวัติและรางวัล</Link>
           </div>
           <div className="hero-status"><Radio size={16} /><span>LEARNING · BUILDING · IMPROVING</span></div>
@@ -72,9 +95,9 @@ export function HomePage() {
             <img src={assetUrl('assets/STUDENT_Wutthipat.png')} alt="Wutthipat Sriyangnok" />
             <div className="profile-code">ZUMO_1547</div>
           </div>
-          <div className="float-chip chip-one"><Cpu size={17} /> IoT BUILDER</div>
-          <div className="float-chip chip-two"><Bot size={17} /> AI EXPLORER</div>
-          <div className="float-chip chip-three"><Gamepad2 size={17} /> GAME DEV</div>
+          <div className="float-chip chip-one hero-project-chip"><Code2 size={17} /><div><small>THIS WEBSITE</small><b>React · TypeScript · Supabase</b></div></div>
+          <div className="float-chip chip-two hero-project-chip"><Microscope size={17} /><div><small>ENGINEERING PROJECT</small><b>Microfiber Filter · ESP32</b></div></div>
+          <div className="float-chip chip-three hero-project-chip"><Bot size={17} /><div><small>AI &amp; ROBOTICS</small><b>Python · micro:bit · CiRA</b></div></div>
           <div className="hero-proof-card">
             <Trophy size={19} />
             <div><span>LATEST HIGHLIGHT</span><b>Science Film Festival 2025</b><small>รางวัลชนะเลิศระดับมัธยมปลาย</small></div>
@@ -99,16 +122,21 @@ export function HomePage() {
       </section>
 
       <section className="content-section home-tech-section">
-        <div className="section-label">// TECHNOLOGY USED IN PROJECTS</div>
+        <header className="home-section-heading reveal">
+          <div><span className="mono-label">// TECHNOLOGY USED IN PROJECTS</span><h2>เครื่องมือที่อยู่เบื้องหลังผลงาน</h2></div>
+          <p>เทคโนโลยีจากแฟ้มสะสมผลงานที่นำมาใช้เขียนโปรแกรม สร้างเกม พัฒนา AI และควบคุมฮาร์ดแวร์จริง</p>
+        </header>
         <div className="tech-grid">
-          {techStack.map((tech, i) => (
+          {techStack.map((tech, i) => {
+            const Icon = tech.icon ? techIcons[tech.icon] : null
+            return (
             <article className="tech-card reveal" style={{ animationDelay: `${i * 60}ms` }} key={tech.name}>
               {tech.image
                 ? <img className="tech-logo" src={assetUrl(tech.image)} alt={`${tech.name} logo`} />
-                : <span className="tech-icon" aria-hidden="true">{tech.icon}</span>}
+                : Icon ? <Icon className="tech-lucide" aria-hidden="true" /> : null}
               <h3>{tech.name}</h3><p>{tech.detail}</p>
             </article>
-          ))}
+          )})}
         </div>
       </section>
 
@@ -132,8 +160,13 @@ export function HomePage() {
             <p><strong>Smart Agriculture</strong><span>วิเคราะห์ข้อมูลและควบคุมการเพาะปลูกด้วย micro:bit</span></p>
             <p><strong>Green Job Film</strong><span>สื่อเรื่องการจัดการขยะกำพร้าและสิ่งแวดล้อมอย่างยั่งยืน</span></p>
           </div>
-          <Link to="/projects">เปิดคลังผลงาน <ArrowRight size={16} /></Link>
+          <Link to="/projects">ดูภาพและรายละเอียดแต่ละโปรเจกต์ <ArrowRight size={16} /></Link>
         </article>
+      </section>
+
+      <section className="content-section home-discover reveal">
+        <div><span className="mono-label">// CONTINUE EXPLORING</span><h2>ทุกโปรเจกต์มีแนวคิด ขั้นตอน และผลลัพธ์</h2><p>ดูรายละเอียดโครงงาน IoT, AI, Robotics, Game Development รวมถึงเว็บไซต์ Portfolio ที่ผมออกแบบและพัฒนาด้วยตัวเอง</p></div>
+        <Link className="button" to="/projects"><FolderOpen size={18} /> เปิดดูผลงานทั้งหมด <ArrowRight size={17} /></Link>
       </section>
     </>
   )

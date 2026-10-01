@@ -62,6 +62,12 @@
 .about-page .profile-meta svg { flex: none; margin-top: 2px; }
 .profile-capabilities { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
 .profile-capabilities span { padding: 5px 8px; border: 1px solid rgba(56, 189, 248, .18); border-radius: 999px; background: rgba(56, 189, 248, .045); color: #8ab7ca; font-size: .62rem; }
+.profile-build-credit { display: flex; align-items: center; gap: 10px; margin-top: 15px; padding: 11px 12px; border: 1px solid rgba(168, 85, 247, .2); border-radius: 12px; background: rgba(168, 85, 247, .055); }
+.profile-build-credit > svg { flex: none; color: #c084fc; }
+.profile-build-credit > div { min-width: 0; display: flex; flex-direction: column; }
+.profile-build-credit span { color: #7e748b; font: .52rem 'Share Tech Mono'; letter-spacing: .1em; }
+.profile-build-credit b { margin-top: 2px; color: #ded6e7; font-size: .72rem; }
+.profile-build-credit small { margin-top: 2px; color: #867d91; font-size: .62rem; }
 
 .about-page .timeline { align-content: start; }
 .timeline-heading { position: relative; z-index: 2; padding: 0 0 9px 77px; }
