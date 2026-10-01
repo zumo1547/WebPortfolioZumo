@@ -26,6 +26,7 @@ import { createPortal } from 'react-dom'
 import { PageHeader } from '../components/PageHeader'
 import { useAuth } from '../context/AuthContext'
 import { fallbackProjects, projectTags } from '../data'
+import { MAX_PROJECT_IMAGE_BYTES, optimizeProjectImage, PROJECT_IMAGE_ACCEPT } from '../lib/imageOptimization'
 import { projectImageUrl, supabase } from '../lib/supabase'
 import type { Project, ProjectInput, ProjectLinks } from '../types'
 import './ProjectsPage.css'
@@ -224,6 +225,7 @@ function ProjectEditor({ project, userId, onClose, onSaved }: { project: Project
   const [value, setValue] = useState<ProjectInput>(project ? { name: project.name, description: project.description, tags: project.tags || [], links: project.links || {}, images: project.images || [] } : emptyInput)
   const [files, setFiles] = useState<File[]>([])
   const [saving, setSaving] = useState(false)
+  const [savingStatus, setSavingStatus] = useState('')
   const [error, setError] = useState('')
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -233,15 +235,21 @@ function ProjectEditor({ project, userId, onClose, onSaved }: { project: Project
       if (!value.tags.length) throw new Error('กรุณาเลือก Tag อย่างน้อย 1 รายการ')
       if (value.images.length + files.length > 5) throw new Error('รูปภาพรวมกันได้สูงสุด 5 รูป')
 
-      for (const file of files) {
-        if (!file.type.startsWith('image/') || file.size > 20 * 1024 * 1024) throw new Error('รองรับไฟล์ภาพไม่เกิน 20 MB ต่อไฟล์')
-        const ext = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'webp'
-        const path = `${userId}/${crypto.randomUUID()}.${ext}`
-        const { error: uploadError } = await supabase.storage.from('project-images').upload(path, file, { contentType: file.type })
+      for (const [index, file] of files.entries()) {
+        setSavingStatus(`กำลังแปลงรูป ${index + 1}/${files.length} เป็น WebP...`)
+        const optimized = await optimizeProjectImage(file)
+        setSavingStatus(`กำลังอัปโหลดรูป ${index + 1}/${files.length}...`)
+        const path = `${userId}/${crypto.randomUUID()}.webp`
+        const { error: uploadError } = await supabase.storage.from('project-images').upload(path, optimized, {
+          contentType: 'image/webp',
+          cacheControl: '31536000',
+          upsert: false,
+        })
         if (uploadError) throw uploadError
         uploaded.push(path)
       }
 
+      setSavingStatus('กำลังบันทึกข้อมูลโปรเจกต์...')
       const cleanLinks = Object.fromEntries(Object.entries(value.links).filter(([, link]) => safeExternalUrl(link))) as ProjectLinks
       const payload = { ...value, links: cleanLinks, images: [...value.images, ...uploaded], updated_at: new Date().toISOString() }
       const result = project
@@ -255,7 +263,7 @@ function ProjectEditor({ project, userId, onClose, onSaved }: { project: Project
     } catch (caught) {
       if (uploaded.length) await supabase.storage.from('project-images').remove(uploaded)
       setError(caught instanceof Error ? caught.message : 'บันทึกไม่สำเร็จ')
-    } finally { setSaving(false) }
+    } finally { setSaving(false); setSavingStatus('') }
   }
 
   const remove = async () => {
@@ -273,6 +281,18 @@ function ProjectEditor({ project, userId, onClose, onSaved }: { project: Project
   }
 
   const toggleEditorTag = (tag: string) => setValue({ ...value, tags: value.tags.includes(tag) ? value.tags.filter((item) => item !== tag) : [...value.tags, tag] })
+
+  const selectFiles = (selectedFiles: FileList | null) => {
+    setError('')
+    const picked = Array.from(selectedFiles || []).slice(0, 5 - value.images.length)
+    const invalid = picked.find((file) => !PROJECT_IMAGE_ACCEPT.includes(file.type) || file.size > MAX_PROJECT_IMAGE_BYTES)
+    if (invalid) {
+      setFiles([])
+      setError(`${invalid.name}: รองรับเฉพาะ JPG, PNG และ WebP ขนาดไม่เกิน 20 MB`)
+      return
+    }
+    setFiles(picked)
+  }
 
   return <div className="modal-backdrop" onMouseDown={onClose} role="presentation">
     <form className="editor-modal" onSubmit={submit} onMouseDown={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="editor-title">
@@ -310,12 +330,13 @@ function ProjectEditor({ project, userId, onClose, onSaved }: { project: Project
         <section className="editor-section">
           <div className="editor-section-title"><Images size={15} /><span>รูปภาพโปรเจกต์ ({value.images.length + files.length}/5)</span></div>
           {!!value.images.length && <div className="existing-images">{value.images.map((image, index) => <div className="existing-image" key={`${image}-${index}`}><img src={projectImageUrl(image)} alt={`รูปปัจจุบัน ${index + 1}`} /><button type="button" onClick={() => setValue({ ...value, images: value.images.filter((item) => item !== image) })} aria-label={`นำรูปที่ ${index + 1} ออก`}><X size={14} /></button></div>)}</div>}
-          <label className="upload-drop"><ImagePlus /><strong>เลือกรูปภาพเพิ่มเติม</strong><span>JPG, PNG, GIF หรือ WebP · ไม่เกิน 20 MB · รวมสูงสุด 5 รูป</span><input type="file" accept="image/*" multiple disabled={value.images.length >= 5} onChange={(event) => setFiles(Array.from(event.target.files || []).slice(0, 5 - value.images.length))} /></label>
-          {!!files.length && <div className="selected-files">{files.map((file) => <span key={`${file.name}-${file.size}`}>{file.name}</span>)}</div>}
+          <label className="upload-drop"><ImagePlus /><strong>เลือกรูปภาพเพิ่มเติม</strong><span>ระบบจะแปลงเป็น WebP และย่อไม่เกิน 1920px อัตโนมัติ · สูงสุด 20 MB</span><input type="file" accept={PROJECT_IMAGE_ACCEPT} multiple disabled={value.images.length >= 5 || saving} onChange={(event) => selectFiles(event.target.files)} /></label>
+          {!!files.length && <div className="selected-files">{files.map((file) => <span key={`${file.name}-${file.size}`}>{file.name} → WebP</span>)}</div>}
         </section>
 
         {error && <div className="notice error">{error}</div>}
-        <div className="editor-actions">{project && <button type="button" className="button danger-button" onClick={() => void remove()} disabled={saving}><Trash2 size={17} /> ลบโปรเจกต์</button>}<button className="button" disabled={saving}>{saving ? 'กำลังบันทึก...' : 'บันทึกโปรเจกต์'}</button></div>
+        {savingStatus && <div className="image-processing-status" role="status"><span className="spinner" />{savingStatus}</div>}
+        <div className="editor-actions">{project && <button type="button" className="button danger-button" onClick={() => void remove()} disabled={saving}><Trash2 size={17} /> ลบโปรเจกต์</button>}<button className="button" disabled={saving}>{saving ? 'กำลังประมวลผล...' : 'บันทึกโปรเจกต์'}</button></div>
       </div>
     </form>
   </div>

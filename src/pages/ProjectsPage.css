@@ -697,6 +697,27 @@
 .selected-files { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
 .selected-files span { padding: 4px 7px; border-radius: 6px; background: rgba(52, 211, 153, .08); color: #6ee7b7; font-size: .65rem; }
 
+.image-processing-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 12px;
+  padding: 11px 13px;
+  border: 1px solid rgba(56, 189, 248, .22);
+  border-radius: 11px;
+  background: rgba(56, 189, 248, .07);
+  color: #7dd3fc;
+  font-size: .75rem;
+}
+
+.image-processing-status .spinner {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-width: 2px;
+  border-top-color: #38bdf8;
+}
+
 .projects-page .editor-actions {
   position: sticky;
   bottom: -26px;
