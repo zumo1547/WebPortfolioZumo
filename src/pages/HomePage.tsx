@@ -96,7 +96,7 @@ export function HomePage() {
             <div className="profile-code">ZUMO_1547</div>
           </div>
           <div className="float-chip chip-one hero-project-chip"><Code2 size={17} /><div><small>THIS WEBSITE</small><b>React · TypeScript · Supabase</b></div></div>
-          <div className="float-chip chip-two hero-project-chip"><Microscope size={17} /><div><small>ENGINEERING PROJECT</small><b>Microfiber Filter · ESP32</b></div></div>
+          <div className="float-chip chip-two hero-project-chip"><Microscope size={17} /><div><small>โครงงานวิศวกรรม</small><b>เครื่องกรองไมโครไฟเบอร์ด้วย ESP32</b></div></div>
           <div className="float-chip chip-three hero-project-chip"><Bot size={17} /><div><small>AI &amp; ROBOTICS</small><b>Python · micro:bit · CiRA</b></div></div>
           <div className="hero-proof-card">
             <Trophy size={19} />
@@ -123,7 +123,7 @@ export function HomePage() {
 
       <section className="content-section home-tech-section">
         <header className="home-section-heading reveal">
-          <div><span className="mono-label">// TECHNOLOGY USED IN PROJECTS</span><h2>เครื่องมือที่อยู่เบื้องหลังผลงาน</h2></div>
+          <div><span className="mono-label">// TECHNOLOGY USED IN PROJECTS</span><h2>เทคโนโลยีที่ผมใช้ทำโปรเจกต์</h2></div>
           <p>เทคโนโลยีจากแฟ้มสะสมผลงานที่นำมาใช้เขียนโปรแกรม สร้างเกม พัฒนา AI และควบคุมฮาร์ดแวร์จริง</p>
         </header>
         <div className="tech-grid">
@@ -156,7 +156,7 @@ export function HomePage() {
           <span className="mono-label">SELECTED WORK</span>
           <h2>จากปัญหาสู่ผลงาน</h2>
           <div className="selected-work-list">
-            <p><strong>Microfiber Filter</strong><span>ระบบกรองเส้นใยจากน้ำทิ้งเครื่องซักผ้า ควบคุมด้วย ESP32</span></p>
+            <p><strong>เครื่องกรองไมโครไฟเบอร์</strong><span>ระบบกรองเส้นใยจากน้ำทิ้งเครื่องซักผ้า ควบคุมด้วย ESP32</span></p>
             <p><strong>Smart Agriculture</strong><span>วิเคราะห์ข้อมูลและควบคุมการเพาะปลูกด้วย micro:bit</span></p>
             <p><strong>Green Job Film</strong><span>สื่อเรื่องการจัดการขยะกำพร้าและสิ่งแวดล้อมอย่างยั่งยืน</span></p>
           </div>
@@ -165,7 +165,7 @@ export function HomePage() {
       </section>
 
       <section className="content-section home-discover reveal">
-        <div><span className="mono-label">// CONTINUE EXPLORING</span><h2>ทุกโปรเจกต์มีแนวคิด ขั้นตอน และผลลัพธ์</h2><p>ดูรายละเอียดโครงงาน IoT, AI, Robotics, Game Development รวมถึงเว็บไซต์ Portfolio ที่ผมออกแบบและพัฒนาด้วยตัวเอง</p></div>
+        <div><span className="mono-label">// ดูผลงานเพิ่มเติม</span><h2>ผลงานที่ผมลงมือทำ</h2><p>รวมโครงงาน IoT, AI, Robotics, Game Development และเว็บไซต์ Portfolio นี้ พร้อมภาพและรายละเอียดของแต่ละงาน</p></div>
         <Link className="button" to="/projects"><FolderOpen size={18} /> เปิดดูผลงานทั้งหมด <ArrowRight size={17} /></Link>
       </section>
     </>
