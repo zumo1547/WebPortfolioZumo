@@ -2,7 +2,7 @@ import { ArrowLeft, AtSign, CheckCircle2, Eye, EyeOff, KeyRound, LockKeyhole, Lo
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { supabase } from '../lib/supabase'
+import { authCallbackUrl, supabase } from '../lib/supabase'
 
 type Mode = 'login' | 'register' | 'forgot' | 'reset'
 
@@ -13,7 +13,8 @@ export function AuthPage({ mode }: { mode: Mode }) {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState(() => new URLSearchParams(location.search).has('confirmed') ? 'ยืนยันอีเมลสำเร็จแล้ว กรุณาเข้าสู่ระบบ' : '')
+  const [pendingEmail, setPendingEmail] = useState('')
   if (user && mode !== 'reset') return <Navigate to={(location.state as { from?: string } | null)?.from || '/'} replace />
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -32,12 +33,13 @@ export function AuthPage({ mode }: { mode: Mode }) {
         if (username.length < 3) throw new Error('ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร')
         if (password.length < 8) throw new Error('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร')
         if (password !== confirm) throw new Error('รหัสผ่านไม่ตรงกัน')
-        const { data, error: authError } = await supabase.auth.signUp({ email, password, options: { data: { username }, emailRedirectTo: `${window.location.origin}/login` } })
+        const { data, error: authError } = await supabase.auth.signUp({ email, password, options: { data: { username }, emailRedirectTo: authCallbackUrl('/') } })
         if (authError) throw authError
+        setPendingEmail(data.session ? '' : email)
         setMessage(data.session ? 'สมัครสำเร็จ กำลังเข้าสู่ระบบ...' : 'สมัครสำเร็จ กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ')
         if (data.session) setTimeout(() => navigate('/'), 800)
       } else if (mode === 'forgot') {
-        const { error: authError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` })
+        const { error: authError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: authCallbackUrl('/reset-password') })
         if (authError) throw authError
         setMessage('ส่งลิงก์ตั้งรหัสผ่านใหม่ไปยังอีเมลแล้ว')
       } else {
@@ -49,8 +51,27 @@ export function AuthPage({ mode }: { mode: Mode }) {
         setMessage('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว')
         setTimeout(() => navigate('/settings'), 900)
       }
-    } catch (caught) { setError(caught instanceof Error ? caught.message : 'เกิดข้อผิดพลาด กรุณาลองใหม่') }
+    } catch (caught) {
+      const caughtMessage = caught instanceof Error ? caught.message : 'เกิดข้อผิดพลาด กรุณาลองใหม่'
+      if (mode === 'login' && caughtMessage.toLowerCase().includes('email not confirmed')) {
+        setPendingEmail(email)
+        setError('อีเมลนี้ยังไม่ได้รับการยืนยัน กรุณากดส่งอีเมลยืนยันใหม่')
+      } else setError(caughtMessage)
+    }
     finally { setLoading(false) }
+  }
+
+  const resendConfirmation = async () => {
+    if (!pendingEmail) return
+    setLoading(true); setError(''); setMessage('')
+    const { error: resendError } = await supabase.auth.resend({
+      type: 'signup',
+      email: pendingEmail,
+      options: { emailRedirectTo: authCallbackUrl('/') },
+    })
+    if (resendError) setError(resendError.message)
+    else setMessage(`ส่งอีเมลยืนยันใหม่ไปที่ ${pendingEmail} แล้ว`)
+    setLoading(false)
   }
 
   const copy = {
@@ -74,6 +95,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
         {mode === 'login' && <Link className="forgot-link" to="/forgot-password">ลืมรหัสผ่าน?</Link>}
         {error && <div className="notice error">{error}</div>}
         {message && <div className="notice success"><CheckCircle2 size={17} /> {message}</div>}
+        {pendingEmail && <button type="button" className="button secondary auth-resend" disabled={loading} onClick={() => void resendConfirmation()}><Mail size={17} /> ส่งอีเมลยืนยันอีกครั้ง</button>}
         <button className="button auth-submit" disabled={loading}>{loading ? 'กำลังดำเนินการ...' : copy.button}</button>
       </form>
       {mode === 'login' && <p className="auth-switch">ยังไม่มีบัญชี? <Link to="/register">สมัครสมาชิก</Link></p>}

@@ -19,6 +19,13 @@ export const supabase = createClient(
 
 export const assetUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`
 
+export const authCallbackUrl = (next: string) => {
+  const baseUrl = (import.meta.env.VITE_SITE_URL as string | undefined) || window.location.origin
+  const callback = new URL('/auth/callback', baseUrl)
+  callback.searchParams.set('next', next)
+  return callback.toString()
+}
+
 export const projectImageUrl = (path: string) => {
   if (!path) return assetUrl('assets/Icon portfolio.png')
   if (/^https?:\/\//i.test(path)) return path

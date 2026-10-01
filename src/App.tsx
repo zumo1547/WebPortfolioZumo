@@ -10,6 +10,7 @@ const AboutPage = lazy(() => import('./pages/AboutPage').then((module) => ({ def
 const ProjectsPage = lazy(() => import('./pages/ProjectsPage').then((module) => ({ default: module.ProjectsPage })))
 const ContactPage = lazy(() => import('./pages/ContactPage').then((module) => ({ default: module.ContactPage })))
 const AuthPage = lazy(() => import('./pages/AuthPage').then((module) => ({ default: module.AuthPage })))
+const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage').then((module) => ({ default: module.AuthCallbackPage })))
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then((module) => ({ default: module.SettingsPage })))
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((module) => ({ default: module.DashboardPage })))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then((module) => ({ default: module.PrivacyPage })))
@@ -25,6 +26,7 @@ export default function App() {
     <Route path="/register" element={<AuthPage mode="register" />} />
     <Route path="/forgot-password" element={<AuthPage mode="forgot" />} />
     <Route path="/reset-password" element={<AuthPage mode="reset" />} />
+    <Route path="/auth/callback" element={<AuthCallbackPage />} />
     <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
     <Route path="/dashboard" element={<ProtectedRoute admin><DashboardPage /></ProtectedRoute>} />
     <Route path="*" element={<HomePage />} />

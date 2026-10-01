@@ -38,7 +38,10 @@ export function HomePage() {
         <div className="tech-grid">
           {techStack.map((tech, i) => (
             <article className="tech-card reveal" style={{ animationDelay: `${i * 60}ms` }} key={tech.name}>
-              <span>{tech.icon}</span><h3>{tech.name}</h3><p>{tech.detail}</p>
+              {tech.image
+                ? <img className="tech-logo" src={assetUrl(tech.image)} alt={`${tech.name} logo`} />
+                : <span className="tech-icon" aria-hidden="true">{tech.icon}</span>}
+              <h3>{tech.name}</h3><p>{tech.detail}</p>
             </article>
           ))}
         </div>

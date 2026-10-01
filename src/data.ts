@@ -10,7 +10,7 @@ export const projectTags = [
 
 export const techStack = [
   { name: 'ESP32', detail: 'Arduino / IoT', icon: '⚡' },
-  { name: 'Python', detail: 'AI / OpenCV', icon: '🐍' },
+  { name: 'Python', detail: 'AI / OpenCV', image: 'assets/Python-logo-notext.svg.png' },
   { name: 'React', detail: 'TypeScript', icon: '⚛' },
   { name: 'Supabase', detail: 'Postgres / Auth', icon: '◆' },
   { name: 'Roblox', detail: 'Lua Studio', icon: '◈' },

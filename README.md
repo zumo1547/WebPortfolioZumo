@@ -47,9 +47,16 @@ Import repository นี้เข้า Vercel แล้ว Vercel จะตร�
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
+- `VITE_SITE_URL` ตั้งเป็น `https://webportfoliozumo.vercel.app`
 
 Build command คือ `npm run build` และ output directory คือ `dist` เมื่อ Vercel เชื่อมกับ GitHub แล้ว ทุก push เข้า `main` จะ deploy อัตโนมัติ
 
-ใน Supabase Dashboard ให้เพิ่ม URL ของ Vercel ที่ **Authentication → URL Configuration → Redirect URLs** เช่น `https://ชื่อโปรเจกต์.vercel.app/**` เพื่อให้ลิงก์ยืนยันอีเมลและรีเซ็ตรหัสผ่านกลับมาที่เว็บได้
+ใน Supabase Dashboard ตั้งค่าที่ **Authentication → URL Configuration** ดังนี้:
+
+- Site URL: `https://webportfoliozumo.vercel.app`
+- Redirect URLs: `https://webportfoliozumo.vercel.app/auth/callback`
+- สำหรับพัฒนาในเครื่อง เพิ่ม `http://localhost:5173/auth/callback`
+
+หน้า `/auth/callback` รองรับทั้งลิงก์ยืนยันอีเมลและลิงก์ตั้งรหัสผ่านใหม่ หากลิงก์เดิมหมดอายุ ผู้ใช้ส่งอีเมลยืนยันซ้ำได้จากหน้าสมัครหรือหน้าเข้าสู่ระบบ
 
 > ห้ามใส่ `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_SECRET_KEY`, JWT secret หรือรหัสผ่าน PostgreSQL ใน source code และ GitHub repository

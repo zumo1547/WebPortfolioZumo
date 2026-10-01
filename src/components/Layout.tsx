@@ -1,5 +1,5 @@
 import { Github, LayoutDashboard, LogIn, LogOut, Menu, Settings, X, Zap } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { assetUrl } from '../lib/supabase'
@@ -15,6 +15,15 @@ export function Layout({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const { user, profile, isAdmin, signOut } = useAuth()
   const location = useLocation()
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = previousOverflow }
+  }, [menuOpen])
+
+  useEffect(() => { setMenuOpen(false) }, [location.pathname])
 
   return (
     <div className="app-shell">
@@ -51,22 +60,22 @@ export function Layout({ children }: { children: ReactNode }) {
             {menuOpen ? <X /> : <Menu />}
           </button>
         </nav>
-        {menuOpen && (
-          <div className="mobile-menu">
-            <div className="mobile-menu-head"><span className="online-dot" /> NAVIGATION</div>
-            {links.map((link) => (
-              <NavLink key={link.to} to={link.to} end={link.to === '/'} onClick={() => setMenuOpen(false)}>{link.label}<span>→</span></NavLink>
-            ))}
-            {user ? (
-              <>
-                {isAdmin && <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard <LayoutDashboard size={18} /></Link>}
-                <Link to="/settings" onClick={() => setMenuOpen(false)}>Settings <Settings size={18} /></Link>
-                <button onClick={() => { void signOut(); setMenuOpen(false) }}>ออกจากระบบ <LogOut size={18} /></button>
-              </>
-            ) : <Link to="/login" onClick={() => setMenuOpen(false)}>เข้าสู่ระบบ <LogIn size={18} /></Link>}
-          </div>
-        )}
       </header>
+      {menuOpen && (
+        <div className="mobile-menu" role="dialog" aria-modal="true" aria-label="เมนูหลัก">
+          <div className="mobile-menu-head"><span className="online-dot" /> NAVIGATION</div>
+          {links.map((link) => (
+            <NavLink key={link.to} to={link.to} end={link.to === '/'} onClick={() => setMenuOpen(false)}>{link.label}<span>→</span></NavLink>
+          ))}
+          {user ? (
+            <>
+              {isAdmin && <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard <LayoutDashboard size={18} /></Link>}
+              <Link to="/settings" onClick={() => setMenuOpen(false)}>Settings <Settings size={18} /></Link>
+              <button onClick={() => { void signOut(); setMenuOpen(false) }}>ออกจากระบบ <LogOut size={18} /></button>
+            </>
+          ) : <Link to="/login" onClick={() => setMenuOpen(false)}>เข้าสู่ระบบ <LogIn size={18} /></Link>}
+        </div>
+      )}
       <main key={location.pathname}>{children}</main>
       <footer className="site-footer">
         <div><Zap size={15} /> ZUMO DEV PORTFOLIO</div>
