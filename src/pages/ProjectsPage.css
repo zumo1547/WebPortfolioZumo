@@ -299,6 +299,21 @@
   white-space: nowrap;
 }
 
+.projects-page .delete-pill {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(248, 113, 113, .38);
+  border-radius: 9px;
+  background: rgba(12, 8, 20, .86);
+  color: #fb7185;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+.projects-page .delete-pill:hover { background: rgba(127, 29, 29, .45); color: #fecaca; }
+
 .project-skeleton {
   height: 350px;
   padding: 8px;

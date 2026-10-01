@@ -12,8 +12,9 @@ Portfolio ของ Wutthipat “Zumo” Sriyangnok เขียนใหม่�
 - อัปโหลดรูปโปรเจกต์สูงสุด 5 รูปไปยัง Supabase Storage
 - แปลงรูป JPG/PNG/WebP เป็น WebP คุณภาพ 82% และย่อด้านยาวไม่เกิน 1920px ก่อนอัปโหลด
 - ค้นหาและกรองโปรเจกต์ตาม Tag
-- Admin Dashboard สำหรับดูโปรเจกต์ ผู้ใช้ และข้อความติดต่อ
-- Row Level Security ป้องกันการเพิ่ม แก้ไข และลบข้อมูลโดยผู้ใช้ทั่วไป
+- Admin Dashboard สำหรับดู เพิ่ม แก้ไข และลบโปรเจกต์ จัดการข้อความ ตรวจข้อมูลผู้ใช้ และดู Audit Log
+- Row Level Security และ Admin RPC ตรวจสิทธิ์ซ้ำที่ PostgreSQL ก่อนแก้ไขหรือลบข้อมูล
+- Security headers บน Vercel รวม CSP, HSTS, anti-frame และ browser permissions policy
 - ตั้งค่า Vercel rewrite สำหรับ React Router เรียบร้อย
 
 ## เริ่มใช้งาน
@@ -35,7 +36,13 @@ POSTGRES_URL=postgresql://postgres.project-ref:password@pooler-host:5432/postgre
 
 `POSTGRES_URL` ใช้เฉพาะสคริปต์สร้างฐานข้อมูลและจะไม่ถูกส่งไปยัง browser ส่วนเว็บใช้เฉพาะ URL และ anon key ซึ่งความปลอดภัยถูกควบคุมด้วย RLS ใน `supabase/schema.sql`
 
-บัญชีแรกที่สมัครหลังติดตั้ง schema จะได้รับ role `admin` เพื่อเข้า Dashboard และจัดการโปรเจกต์ บัญชีถัดไปจะเป็น `user`
+บัญชีที่สมัครใหม่จะได้รับ role `user` เสมอ เพื่อป้องกันผู้สมัครรายแรกยึดสิทธิ์แอดมิน การตั้งแอดมินครั้งแรกให้ทำผ่าน Supabase SQL Editor ด้วยบัญชีเจ้าของโปรเจกต์:
+
+```sql
+update public.profiles set role = 'admin' where id = 'AUTH_USER_UUID';
+```
+
+หลังจากนั้นแอดมินสามารถจัดการสิทธิ์บัญชีอื่นผ่าน Dashboard ได้ โดยระบบไม่อนุญาตให้แอดมินเปลี่ยนสิทธิ์บัญชีที่กำลังใช้งานเอง
 
 ## Production build
 

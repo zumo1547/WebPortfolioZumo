@@ -19,7 +19,15 @@ const client = new pg.Client({ connectionString: connectionUrl.toString(), ssl: 
 await client.connect()
 try {
   await client.query(sql)
-  const { rows } = await client.query('select (select count(*) from public.projects) as projects, (select count(*) from public.profiles) as profiles')
+  const { rows } = await client.query(`
+    select
+      (select count(*) from public.projects) as projects,
+      (select count(*) from public.profiles) as profiles,
+      (select count(*) from public.profiles where role = 'admin') as admins,
+      (select count(*) from public.admin_activity) as audit_events,
+      (select count(*) from pg_proc join pg_namespace on pg_namespace.oid = pg_proc.pronamespace where pg_namespace.nspname = 'public' and pg_proc.proname in ('admin_delete_project', 'admin_set_user_role')) as admin_functions,
+      (select relrowsecurity from pg_class join pg_namespace on pg_namespace.oid = pg_class.relnamespace where pg_namespace.nspname = 'public' and pg_class.relname = 'projects') as projects_rls
+  `)
   console.log('Supabase schema is ready:', rows[0])
 } finally {
   await client.end()

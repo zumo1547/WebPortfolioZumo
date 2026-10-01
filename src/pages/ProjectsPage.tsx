@@ -82,6 +82,7 @@ export function ProjectsPage() {
   const [activeTags, setActiveTags] = useState<string[]>([])
   const [selected, setSelected] = useState<Project | null>(null)
   const [editing, setEditing] = useState<Project | null | 'new'>(null)
+  const [deleting, setDeleting] = useState<Project | null>(null)
 
   const loadProjects = async () => {
     setLoading(true)
@@ -93,12 +94,13 @@ export function ProjectsPage() {
   useEffect(() => { void loadProjects() }, [])
 
   useEffect(() => {
-    if (!selected && !editing) return
+    if (!selected && !editing && !deleting) return
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
       if (editing) setEditing(null)
+      else if (deleting) setDeleting(null)
       else setSelected(null)
     }
     document.addEventListener('keydown', closeOnEscape)
@@ -106,7 +108,7 @@ export function ProjectsPage() {
       document.body.style.overflow = previousOverflow
       document.removeEventListener('keydown', closeOnEscape)
     }
-  }, [selected, editing])
+  }, [selected, editing, deleting])
 
   const normalizedQuery = query.trim().toLocaleLowerCase('th')
   const visible = useMemo(() => projects.filter((project) => {
@@ -164,7 +166,7 @@ export function ProjectsPage() {
             </button>
             <div className="project-card-actions">
               <LinkButtons compact links={project.links || {}} onClick={(event) => event.stopPropagation()} />
-              {isAdmin && project.id > 0 && <button className="edit-pill" onClick={(event) => { event.stopPropagation(); setSelected(null); setEditing(project) }}><Pencil size={14} /> แก้ไข</button>}
+              {isAdmin && project.id > 0 && <><button className="edit-pill" onClick={(event) => { event.stopPropagation(); setSelected(null); setEditing(project) }}><Pencil size={14} /> แก้ไข</button><button className="delete-pill" onClick={(event) => { event.stopPropagation(); setSelected(null); setDeleting(project) }} aria-label={`ลบ ${project.name}`} title="ลบโปรเจกต์"><Trash2 size={14} /></button></>}
             </div>
           </article>
         ))}
@@ -174,11 +176,12 @@ export function ProjectsPage() {
 
       {selected && createPortal(<div className="projects-page modal-portal"><ProjectModal project={selected} onClose={() => setSelected(null)} /></div>, document.body)}
       {editing && isAdmin && user && createPortal(<div className="projects-page modal-portal"><ProjectEditor project={editing === 'new' ? null : editing} userId={user.id} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); void loadProjects() }} /></div>, document.body)}
+      {deleting && isAdmin && user && createPortal(<div className="projects-page modal-portal"><ProjectEditor project={deleting} userId={user.id} initialDeleteArmed onClose={() => setDeleting(null)} onSaved={() => { setDeleting(null); void loadProjects() }} /></div>, document.body)}
     </section>
   )
 }
 
-function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
+export function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
   const [imageIndex, setImageIndex] = useState(0)
   const images = project.images?.length ? project.images : ['/assets/Icon portfolio.png']
   const selectImage = (offset: number) => setImageIndex((current) => (current + offset + images.length) % images.length)
@@ -233,13 +236,13 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
   </div>
 }
 
-function ProjectEditor({ project, userId, onClose, onSaved }: { project: Project | null; userId: string; onClose: () => void; onSaved: () => void }) {
+export function ProjectEditor({ project, userId, onClose, onSaved, initialDeleteArmed = false }: { project: Project | null; userId: string; onClose: () => void; onSaved: () => void; initialDeleteArmed?: boolean }) {
   const [value, setValue] = useState<ProjectInput>(project ? { name: project.name, description: project.description, tags: project.tags || [], links: project.links || {}, images: project.images || [] } : emptyInput)
   const [files, setFiles] = useState<File[]>([])
   const [saving, setSaving] = useState(false)
   const [savingStatus, setSavingStatus] = useState('')
   const [error, setError] = useState('')
-  const [deleteArmed, setDeleteArmed] = useState(false)
+  const [deleteArmed, setDeleteArmed] = useState(initialDeleteArmed)
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setSaving(true); setError('')
@@ -284,12 +287,10 @@ function ProjectEditor({ project, userId, onClose, onSaved }: { project: Project
     if (!project) return
     setSaving(true); setSavingStatus('กำลังลบโปรเจกต์...'); setError('')
     try {
-      const { data: deleted, error: deleteError } = await supabase.from('projects').delete().eq('id', project.id).select('id').maybeSingle()
+      const { data: storagePaths, error: deleteError } = await supabase.rpc('admin_delete_project', { target_project_id: project.id })
       if (deleteError) throw deleteError
-      if (!deleted) throw new Error('ลบโปรเจกต์ไม่ได้ กรุณาตรวจสอบว่าบัญชีนี้มีสิทธิ์แอดมิน')
-
-      const storagePaths = (project.images || []).filter((path) => !path.startsWith('/') && !/^https?:/i.test(path))
-      if (storagePaths.length) await supabase.storage.from('project-images').remove(storagePaths)
+      const removablePaths = ((storagePaths as string[] | null) || project.images || []).filter((path) => !path.startsWith('/') && !/^https?:/i.test(path))
+      if (removablePaths.length) await supabase.storage.from('project-images').remove(removablePaths)
       onSaved()
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'ลบโปรเจกต์ไม่สำเร็จ')

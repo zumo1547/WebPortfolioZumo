@@ -31,3 +31,23 @@ export interface ProjectInput {
   links: ProjectLinks
   images: string[]
 }
+
+export interface ContactMessage {
+  id: number
+  name: string
+  email: string
+  subject: string
+  message: string
+  read: boolean
+  created_at: string
+}
+
+export interface AdminActivity {
+  id: number
+  actor_id: string | null
+  action: string
+  entity_type: string
+  entity_id: string | null
+  details: Record<string, unknown>
+  created_at: string
+}
