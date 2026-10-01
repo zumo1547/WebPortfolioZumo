@@ -203,14 +203,26 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
       </header>
       <div className="project-modal-scroll">
         <div className="modal-image">
-          <img src={projectImageUrl(images[imageIndex])} alt={`${project.name} รูปที่ ${imageIndex + 1}`} />
+          <img
+            key={`${images[imageIndex]}-${imageIndex}`}
+            src={projectImageUrl(images[imageIndex])}
+            alt={`${project.name} รูปที่ ${imageIndex + 1}`}
+            decoding="async"
+            onError={(event) => {
+              const fallback = projectImageUrl('/assets/Icon portfolio.png')
+              if (event.currentTarget.src !== fallback) event.currentTarget.src = fallback
+            }}
+          />
           {images.length > 1 && <>
             <button className="gallery-arrow previous" onClick={() => selectImage(-1)} aria-label="รูปก่อนหน้า"><ChevronLeft /></button>
             <button className="gallery-arrow next" onClick={() => selectImage(1)} aria-label="รูปถัดไป"><ChevronRight /></button>
             <span className="gallery-count">{imageIndex + 1} / {images.length}</span>
           </>}
         </div>
-        {images.length > 1 && <div className="thumb-row">{images.map((image, index) => <button className={index === imageIndex ? 'active' : ''} onClick={() => setImageIndex(index)} aria-label={`ดูรูปที่ ${index + 1}`} key={`${image}-${index}`}><img src={projectImageUrl(image)} alt="" /></button>)}</div>}
+        {images.length > 1 && <nav className="gallery-pagination" aria-label="เลือกรูปภาพโปรเจกต์">
+          <span>รูปภาพ</span>
+          <div>{images.map((image, index) => <button type="button" className={index === imageIndex ? 'active' : ''} onClick={() => setImageIndex(index)} aria-current={index === imageIndex ? 'true' : undefined} aria-label={`ดูรูปที่ ${index + 1}`} key={`${image}-${index}`}>{String(index + 1).padStart(2, '0')}</button>)}</div>
+        </nav>}
         <div className="modal-content">
           <TagBadges tags={project.tags || []} />
           <h2 id="project-modal-title">{project.name}</h2>
@@ -227,6 +239,7 @@ function ProjectEditor({ project, userId, onClose, onSaved }: { project: Project
   const [saving, setSaving] = useState(false)
   const [savingStatus, setSavingStatus] = useState('')
   const [error, setError] = useState('')
+  const [deleteArmed, setDeleteArmed] = useState(false)
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setSaving(true); setError('')
@@ -253,9 +266,10 @@ function ProjectEditor({ project, userId, onClose, onSaved }: { project: Project
       const cleanLinks = Object.fromEntries(Object.entries(value.links).filter(([, link]) => safeExternalUrl(link))) as ProjectLinks
       const payload = { ...value, links: cleanLinks, images: [...value.images, ...uploaded], updated_at: new Date().toISOString() }
       const result = project
-        ? await supabase.from('projects').update(payload).eq('id', project.id)
-        : await supabase.from('projects').insert(payload)
+        ? await supabase.from('projects').update(payload).eq('id', project.id).select('id').maybeSingle()
+        : await supabase.from('projects').insert(payload).select('id').maybeSingle()
       if (result.error) throw result.error
+      if (!result.data) throw new Error('บันทึกไม่สำเร็จ กรุณาตรวจสอบสิทธิ์แอดมินแล้วลองใหม่')
 
       const removedImages = (project?.images || []).filter((path) => !value.images.includes(path) && !path.startsWith('/') && !/^https?:/i.test(path))
       if (removedImages.length) await supabase.storage.from('project-images').remove(removedImages)
@@ -267,17 +281,21 @@ function ProjectEditor({ project, userId, onClose, onSaved }: { project: Project
   }
 
   const remove = async () => {
-    if (!project || !confirm(`ลบโปรเจกต์ “${project.name}” ใช่หรือไม่?`)) return
-    setSaving(true); setError('')
-    const { error: deleteError } = await supabase.from('projects').delete().eq('id', project.id)
-    if (deleteError) {
-      setError(deleteError.message)
-      setSaving(false)
-      return
+    if (!project) return
+    setSaving(true); setSavingStatus('กำลังลบโปรเจกต์...'); setError('')
+    try {
+      const { data: deleted, error: deleteError } = await supabase.from('projects').delete().eq('id', project.id).select('id').maybeSingle()
+      if (deleteError) throw deleteError
+      if (!deleted) throw new Error('ลบโปรเจกต์ไม่ได้ กรุณาตรวจสอบว่าบัญชีนี้มีสิทธิ์แอดมิน')
+
+      const storagePaths = (project.images || []).filter((path) => !path.startsWith('/') && !/^https?:/i.test(path))
+      if (storagePaths.length) await supabase.storage.from('project-images').remove(storagePaths)
+      onSaved()
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'ลบโปรเจกต์ไม่สำเร็จ')
+    } finally {
+      setSaving(false); setSavingStatus(''); setDeleteArmed(false)
     }
-    const storagePaths = project.images.filter((path) => !path.startsWith('/') && !/^https?:/i.test(path))
-    if (storagePaths.length) await supabase.storage.from('project-images').remove(storagePaths)
-    setSaving(false); onSaved()
   }
 
   const toggleEditorTag = (tag: string) => setValue({ ...value, tags: value.tags.includes(tag) ? value.tags.filter((item) => item !== tag) : [...value.tags, tag] })
@@ -336,7 +354,14 @@ function ProjectEditor({ project, userId, onClose, onSaved }: { project: Project
 
         {error && <div className="notice error">{error}</div>}
         {savingStatus && <div className="image-processing-status" role="status"><span className="spinner" />{savingStatus}</div>}
-        <div className="editor-actions">{project && <button type="button" className="button danger-button" onClick={() => void remove()} disabled={saving}><Trash2 size={17} /> ลบโปรเจกต์</button>}<button className="button" disabled={saving}>{saving ? 'กำลังประมวลผล...' : 'บันทึกโปรเจกต์'}</button></div>
+        <div className={`editor-actions ${deleteArmed ? 'confirming-delete' : ''}`}>
+          {project && !deleteArmed && <button type="button" className="button danger-button" onClick={() => { setDeleteArmed(true); setError('') }} disabled={saving}><Trash2 size={17} /> ลบโปรเจกต์</button>}
+          {project && deleteArmed && <div className="delete-confirmation" role="alertdialog" aria-label="ยืนยันลบโปรเจกต์">
+            <span><Trash2 size={16} /><b>ลบ “{project.name}” ถาวร?</b></span>
+            <div><button type="button" className="button secondary small" onClick={() => setDeleteArmed(false)} disabled={saving}>ยกเลิก</button><button type="button" className="button danger-button small" onClick={() => void remove()} disabled={saving}>ยืนยันลบ</button></div>
+          </div>}
+          <button className="button" disabled={saving || deleteArmed}>{saving ? 'กำลังประมวลผล...' : 'บันทึกโปรเจกต์'}</button>
+        </div>
       </div>
     </form>
   </div>

@@ -1,0 +1,106 @@
+.about-page .profile-panel-copy p { margin-bottom: 20px; }
+.about-page .profile-meta { align-items: flex-start; }
+.about-page .profile-meta svg { flex: none; margin-top: 2px; }
+
+.portfolio-proof,
+.achievement-board {
+  margin-top: 28px;
+  border: 1px solid rgba(168, 85, 247, .18);
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(17, 11, 34, .88), rgba(9, 6, 18, .92));
+  overflow: hidden;
+}
+
+.portfolio-proof > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 26px 28px 22px;
+  border-bottom: 1px solid rgba(168, 85, 247, .13);
+}
+
+.portfolio-proof h2,
+.achievement-board h2 {
+  margin: 6px 0 0;
+  color: #f3eef9;
+  font: 800 clamp(1.45rem, 3vw, 2rem) 'Kanit';
+}
+
+.portfolio-proof > header > p {
+  max-width: 460px;
+  margin: 0;
+  color: #858092;
+  font-size: .8rem;
+  line-height: 1.7;
+  text-align: right;
+}
+
+.highlight-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.highlight-grid article {
+  min-width: 0;
+  padding: 26px 22px 28px;
+  border-right: 1px solid rgba(168, 85, 247, .11);
+}
+.highlight-grid article:last-child { border-right: 0; }
+.highlight-grid strong {
+  display: block;
+  background: linear-gradient(105deg, #c084fc, #f472b6 55%, #38bdf8);
+  background-clip: text;
+  color: transparent;
+  font: 900 clamp(2rem, 4vw, 3.1rem)/1 'Kanit';
+  letter-spacing: -.04em;
+}
+.highlight-grid b { display: block; margin-top: 11px; color: #cfc8d9; font: .65rem 'Share Tech Mono'; letter-spacing: .08em; }
+.highlight-grid span { display: block; margin-top: 7px; color: #746e80; font-size: .72rem; line-height: 1.55; }
+
+.achievement-board { padding: 27px; }
+.achievement-board-heading { margin-bottom: 19px; }
+.achievement-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+.achievement-grid article {
+  min-height: 190px;
+  position: relative;
+  padding: 24px;
+  border: 1px solid rgba(148, 163, 184, .12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .025);
+  overflow: hidden;
+}
+.achievement-grid article::after {
+  content: '';
+  position: absolute;
+  inset: auto -55px -65px auto;
+  width: 135px;
+  height: 135px;
+  border-radius: 50%;
+  background: rgba(168, 85, 247, .08);
+  filter: blur(3px);
+}
+.achievement-grid article > svg { width: 29px; height: 29px; color: #c084fc; }
+.achievement-grid h3 { margin: 17px 0 8px; color: #e9e2f1; font: 700 1.05rem 'Kanit'; }
+.achievement-grid p { margin: 0; color: #858092; font-size: .78rem; line-height: 1.7; }
+.achievement-rank { position: absolute; top: 20px; right: 21px; color: rgba(216, 180, 254, .24); font: 700 1.25rem 'Share Tech Mono'; }
+
+@media (max-width: 860px) {
+  .highlight-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .highlight-grid article:nth-child(2) { border-right: 0; }
+  .highlight-grid article:nth-child(-n + 2) { border-bottom: 1px solid rgba(168, 85, 247, .11); }
+}
+
+@media (max-width: 620px) {
+  .portfolio-proof > header { align-items: flex-start; flex-direction: column; gap: 10px; padding: 21px 18px 18px; }
+  .portfolio-proof > header > p { text-align: left; }
+  .highlight-grid article { padding: 21px 16px; }
+  .highlight-grid strong { font-size: clamp(1.65rem, 9vw, 2.3rem); }
+  .achievement-board { padding: 19px 14px; }
+  .achievement-grid { grid-template-columns: 1fr; }
+  .achievement-grid article { min-height: 0; padding: 20px; }
+}
+
+@media (max-width: 390px) {
+  .highlight-grid { grid-template-columns: 1fr; }
+  .highlight-grid article,
+  .highlight-grid article:nth-child(2),
+  .highlight-grid article:nth-child(-n + 2) { border-right: 0; border-bottom: 1px solid rgba(168, 85, 247, .11); }
+  .highlight-grid article:last-child { border-bottom: 0; }
+}

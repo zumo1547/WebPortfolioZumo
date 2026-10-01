@@ -1,18 +1,62 @@
-import { Award, BookOpen, BrainCircuit, Cpu, Gamepad2, MapPin, Rocket } from 'lucide-react'
+import {
+  Award,
+  BookOpen,
+  BrainCircuit,
+  Cpu,
+  Gamepad2,
+  GraduationCap,
+  MapPin,
+  Medal,
+  Rocket,
+  Trophy,
+  UsersRound,
+} from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { assetUrl } from '../lib/supabase'
+import './AboutPage.css'
 
 const timeline = [
-  { icon: <Gamepad2 />, title: 'Game Development', text: 'เริ่มต้นจากการสร้างเกมและระบบใน Roblox Studio และ Unity เรียนรู้ Lua และ C# ผ่านการลงมือทำ' },
-  { icon: <Cpu />, title: 'IoT & Robotics', text: 'พัฒนา Smart Farm, Smart Home และระบบ Safety ด้วย ESP32, Arduino, Sensor และ Blynk' },
-  { icon: <BrainCircuit />, title: 'AI & Computer Vision', text: 'สร้างชุดข้อมูลและทดลองโมเดลตรวจจับวัตถุด้วย Python, OpenCV และเครื่องมือ AI' },
-  { icon: <Rocket />, title: 'Web & Cloud', text: 'พัฒนาเว็บสมัยใหม่ด้วย React, TypeScript, PostgreSQL และ Supabase' },
+  { icon: <Gamepad2 />, title: 'Game Development', text: 'เริ่มต้นจากการสร้างเกมและระบบใน Roblox Studio และ Unity พร้อมเรียนรู้ Lua และ C# ผ่านการลงมือทำจริง' },
+  { icon: <Cpu />, title: 'IoT & Robotics', text: 'พัฒนาระบบด้วย ESP32, Arduino, micro:bit, Sensor และ Blynk ตั้งแต่ Smart Farm ไปจนถึงระบบอัตโนมัติ' },
+  { icon: <BrainCircuit />, title: 'AI & Data', text: 'ทดลอง Computer Vision การเทรนโมเดล และวิเคราะห์ข้อมูลด้วย Python, OpenCV, Google Colab และ CiRA CORE' },
+  { icon: <Rocket />, title: 'Web & Cloud', text: 'พัฒนาเว็บสมัยใหม่ด้วย React, TypeScript, PostgreSQL และ Supabase ให้ใช้งานได้ทั้งบนคอมพิวเตอร์และโทรศัพท์' },
+]
+
+const highlights = [
+  { value: '3.77', label: 'GPAX', detail: 'ระดับมัธยมศึกษาตอนต้น' },
+  { value: '91.97%', label: 'FILTER EFFICIENCY', detail: 'ผลทดสอบเครื่องกรองไมโครไฟเบอร์' },
+  { value: 'TOP 30', label: 'AI HACKATHON', detail: 'SPU AI Prompt Mini Hackathon 2025' },
+  { value: '70', label: 'SCHOOLS', detail: 'ผู้ร่วม Science Film Festival 2025' },
+]
+
+const achievements = [
+  {
+    icon: Trophy,
+    title: 'ชนะเลิศ Science Film Festival 2025',
+    text: 'รางวัลชนะเลิศระดับมัธยมศึกษาตอนปลาย จากผลงานวิดีโอ “ขยะกำพร้า” ในหัวข้อ Green Job',
+  },
+  {
+    icon: Medal,
+    title: 'เหรียญทองแดง OCOP',
+    text: 'อันดับ 4 รอบชิงชนะเลิศ โครงงานเครื่องกรองไมโครไฟเบอร์อัตโนมัติที่ควบคุมด้วย ESP32',
+  },
+  {
+    icon: Award,
+    title: 'Micro:bit Thailand Challenge 2026',
+    text: 'เหรียญทองแดงระดับมัธยมปลาย รายการ AIoT & Data Collection จากระบบเกษตรอัจฉริยะ',
+  },
+  {
+    icon: UsersRound,
+    title: 'ศิลปหัตถกรรม ครั้งที่ 73',
+    text: 'เหรียญทอง รองชนะเลิศอันดับ 2 การออกแบบสิ่งของเครื่องใช้ด้วยโปรแกรมคอมพิวเตอร์',
+  },
 ]
 
 export function AboutPage() {
   return (
-    <section className="content-section page-section">
-      <PageHeader eyebrow="PROFILE DATABASE" title="ABOUT" accent="ME">เรื่องราว ทักษะ และสิ่งที่กำลังเรียนรู้ของผม</PageHeader>
+    <section className="content-section page-section about-page">
+      <PageHeader eyebrow="PROFILE DATABASE" title="ABOUT" accent="ME">เรื่องราว ทักษะ ผลงาน และเส้นทางการเรียนรู้ของผม</PageHeader>
+
       <div className="about-grid">
         <article className="profile-panel reveal">
           <div className="panel-line" />
@@ -20,11 +64,13 @@ export function AboutPage() {
           <div className="profile-panel-copy">
             <span className="mono-label">// IDENTITY</span>
             <h2>Wutthipat<br /><span>Sriyangnok</span></h2>
-            <p>“Zumo” — นักพัฒนารุ่นใหม่ที่สนใจการสร้างเกม ระบบ IoT หุ่นยนต์ ปัญญาประดิษฐ์ และเว็บแอป</p>
-            <div className="profile-meta"><MapPin size={16} /> Thailand</div>
-            <div className="profile-meta"><BookOpen size={16} /> Student &amp; Lifelong Learner</div>
+            <p>“Zumo” — นักเรียนชั้นมัธยมศึกษาปีที่ 5 แผนการเรียนวิทยาศาสตร์–นวัตกรรม สนใจการสร้างเกม ระบบ IoT หุ่นยนต์ ปัญญาประดิษฐ์ และเว็บแอป</p>
+            <div className="profile-meta"><MapPin size={16} /> Samut Prakan, Thailand</div>
+            <div className="profile-meta"><GraduationCap size={16} /> Nawaminthrachinuthit Triamudomsuksapattanakarn School</div>
+            <div className="profile-meta"><BookOpen size={16} /> Science &amp; Innovation Program</div>
           </div>
         </article>
+
         <div className="timeline">
           {timeline.map((item, index) => (
             <article className="timeline-item reveal" style={{ animationDelay: `${index * 80}ms` }} key={item.title}>
@@ -34,7 +80,30 @@ export function AboutPage() {
           ))}
         </div>
       </div>
-      <div className="achievement-strip reveal"><Award /><div><b>เป้าหมายของผม</b><p>สร้างเทคโนโลยีที่แก้ปัญหาได้จริง และแบ่งปันสิ่งที่เรียนรู้ผ่านทุกโปรเจกต์</p></div></div>
+
+      <section className="portfolio-proof reveal" aria-labelledby="portfolio-proof-title">
+        <header>
+          <div><span className="mono-label">// VERIFIED HIGHLIGHTS</span><h2 id="portfolio-proof-title">ตัวเลขจากผลงานจริง</h2></div>
+          <p>ข้อมูลสรุปจากแฟ้มสะสมผลงาน ครอบคลุมผลการเรียน การแข่งขัน และผลทดสอบโครงงาน</p>
+        </header>
+        <div className="highlight-grid">
+          {highlights.map((item) => <article key={item.label}><strong>{item.value}</strong><b>{item.label}</b><span>{item.detail}</span></article>)}
+        </div>
+      </section>
+
+      <section className="achievement-board reveal" aria-labelledby="achievement-title">
+        <div className="achievement-board-heading"><span className="mono-label">// SELECTED ACHIEVEMENTS</span><h2 id="achievement-title">ผลงานเด่นและรางวัล</h2></div>
+        <div className="achievement-grid">
+          {achievements.map(({ icon: Icon, title, text }, index) => <article key={title}>
+            <div className="achievement-rank">0{index + 1}</div>
+            <Icon aria-hidden="true" />
+            <h3>{title}</h3>
+            <p>{text}</p>
+          </article>)}
+        </div>
+      </section>
+
+      <div className="achievement-strip reveal"><Award /><div><b>เป้าหมายของผม</b><p>สร้างเทคโนโลยีที่แก้ปัญหาได้จริง วัดผลได้ และพัฒนาต่อจนเกิดประโยชน์ต่อผู้ใช้งานและสิ่งแวดล้อม</p></div></div>
     </section>
   )
 }
