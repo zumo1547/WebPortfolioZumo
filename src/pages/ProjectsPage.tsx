@@ -3,17 +3,24 @@ import {
   ChevronRight,
   ExternalLink,
   Github,
+  Globe2,
   ImagePlus,
   Images,
+  Landmark,
   Link2,
   Pencil,
   Plus,
   Search,
+  School,
+  Tag,
+  Target,
   Trash2,
+  Trophy,
   Upload,
   X,
   Youtube,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useEffect, useMemo, useState, type FormEvent, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { PageHeader } from '../components/PageHeader'
@@ -25,12 +32,12 @@ import './ProjectsPage.css'
 
 const emptyInput: ProjectInput = { name: '', description: '', images: [], tags: ['งานในโรงเรียน'], links: {} }
 
-const tagMeta: Record<string, { icon: string; tone: string }> = {
-  'ระดับประเทศ': { icon: '🏆', tone: 'national' },
-  'ระดับนานาชาติ': { icon: '🌏', tone: 'international' },
-  'ระดับจังหวัด': { icon: '🏛️', tone: 'provincial' },
-  'งานในโรงเรียน': { icon: '🏫', tone: 'school' },
-  'เข้าร่วมกิจกรรม': { icon: '🎯', tone: 'activity' },
+const tagMeta: Record<string, { icon: LucideIcon; tone: string }> = {
+  'ระดับประเทศ': { icon: Trophy, tone: 'national' },
+  'ระดับนานาชาติ': { icon: Globe2, tone: 'international' },
+  'ระดับจังหวัด': { icon: Landmark, tone: 'provincial' },
+  'งานในโรงเรียน': { icon: School, tone: 'school' },
+  'เข้าร่วมกิจกรรม': { icon: Target, tone: 'activity' },
 }
 
 const safeExternalUrl = (value?: string) => {
@@ -46,8 +53,9 @@ const safeExternalUrl = (value?: string) => {
 function TagBadges({ tags }: { tags: string[] }) {
   return <div className="project-tags">
     {tags.map((tag) => {
-      const meta = tagMeta[tag] || { icon: '📌', tone: 'default' }
-      return <span className={`project-tag tag-${meta.tone}`} key={tag}><b aria-hidden="true">{meta.icon}</b>{tag}</span>
+      const meta = tagMeta[tag] || { icon: Tag, tone: 'default' }
+      const Icon = meta.icon
+      return <span className={`project-tag tag-${meta.tone}`} key={tag}><Icon size={12} aria-hidden="true" />{tag}</span>
     })}
   </div>
 }
@@ -127,8 +135,9 @@ export function ProjectsPage() {
         <div className="tag-filters" aria-label="กรองตามระดับผลงาน">
           {projectTags.map((tag) => {
             const meta = tagMeta[tag]
+            const Icon = meta.icon
             const active = activeTags.includes(tag)
-            return <button className={`tag-filter tag-${meta.tone} ${active ? 'active' : ''}`} aria-pressed={active} onClick={() => toggleTag(tag)} key={tag}><span aria-hidden="true">{meta.icon}</span>{tag}</button>
+            return <button className={`tag-filter tag-${meta.tone} ${active ? 'active' : ''}`} aria-pressed={active} onClick={() => toggleTag(tag)} key={tag}><Icon size={14} aria-hidden="true" />{tag}</button>
           })}
           {(activeTags.length > 0 || query) && <button className="clear-filter" onClick={clearFilters}><X size={14} /> ล้างตัวกรอง</button>}
         </div>
@@ -152,8 +161,10 @@ export function ProjectsPage() {
                 <p>{project.description}</p>
               </div>
             </button>
-            <LinkButtons compact links={project.links || {}} onClick={(event) => event.stopPropagation()} />
-            {isAdmin && project.id > 0 && <button className="edit-pill" onClick={() => setEditing(project)}><Pencil size={14} /> แก้ไข</button>}
+            <div className="project-card-actions">
+              <LinkButtons compact links={project.links || {}} onClick={(event) => event.stopPropagation()} />
+              {isAdmin && project.id > 0 && <button className="edit-pill" onClick={(event) => { event.stopPropagation(); setSelected(null); setEditing(project) }}><Pencil size={14} /> แก้ไข</button>}
+            </div>
           </article>
         ))}
       </div>}
@@ -184,7 +195,10 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
     <article className="project-modal" role="dialog" aria-modal="true" aria-labelledby="project-modal-title" onMouseDown={(event) => event.stopPropagation()}>
       <header className="modal-toolbar">
         <div><span>PROJECT DETAILS</span><strong>รายละเอียดผลงาน</strong></div>
-        <button className="modal-close" onClick={onClose} aria-label="ปิดรายละเอียดโปรเจกต์"><X /></button>
+        <div className="modal-toolbar-actions">
+          <LinkButtons compact links={project.links || {}} />
+          <button className="modal-close" onClick={onClose} aria-label="ปิดรายละเอียดโปรเจกต์"><X /></button>
+        </div>
       </header>
       <div className="project-modal-scroll">
         <div className="modal-image">
@@ -200,7 +214,6 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
           <TagBadges tags={project.tags || []} />
           <h2 id="project-modal-title">{project.name}</h2>
           <p>{project.description}</p>
-          <LinkButtons links={project.links || {}} />
         </div>
       </div>
     </article>
@@ -276,11 +289,12 @@ function ProjectEditor({ project, userId, onClose, onSaved }: { project: Project
         </section>
 
         <fieldset className="editor-section editor-fieldset">
-          <legend className="editor-section-title"><span>🏷️</span><span>ระดับ / Tag</span></legend>
+          <legend className="editor-section-title"><Tag size={15} aria-hidden="true" /><span>ระดับ / Tag</span></legend>
           <div className="editor-tags">{projectTags.map((tag) => {
             const meta = tagMeta[tag]
+            const Icon = meta.icon
             const checked = value.tags.includes(tag)
-            return <label className={`editor-tag tag-${meta.tone} ${checked ? 'checked' : ''}`} key={tag}><input type="checkbox" checked={checked} onChange={() => toggleEditorTag(tag)} /><i>{checked ? '✓' : ''}</i><span>{meta.icon} {tag}</span></label>
+            return <label className={`editor-tag tag-${meta.tone} ${checked ? 'checked' : ''}`} key={tag}><input type="checkbox" checked={checked} onChange={() => toggleEditorTag(tag)} /><i>{checked ? '✓' : ''}</i><span><Icon size={14} aria-hidden="true" />{tag}</span></label>
           })}</div>
         </fieldset>
 
