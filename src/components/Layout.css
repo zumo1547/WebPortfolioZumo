@@ -17,6 +17,23 @@
 }
 .mobile-admin-status { display: inline-flex; align-items: center; gap: 8px; }
 .mobile-admin-status b { min-width: 23px; height: 23px; display: grid; place-items: center; border-radius: 999px; background: #ec4899; color: white; font-size: .68rem; }
+.menu-button { transition: border-color .25s ease, background .25s ease, box-shadow .25s ease, transform .2s ease; }
+.menu-button:hover { transform: translateY(-1px); }
+.menu-button[aria-expanded='true'] { border-color: rgba(168, 85, 247, .46); background: rgba(168, 85, 247, .15); box-shadow: 0 0 24px rgba(168, 85, 247, .15); }
+.menu-button svg { animation: mobile-menu-icon-in .28s cubic-bezier(.2, .8, .2, 1); }
+.mobile-menu { transform-origin: top center; will-change: transform, opacity, clip-path; }
+.mobile-menu.is-open { animation: mobile-menu-in .42s cubic-bezier(.16, 1, .3, 1) both; }
+.mobile-menu.is-closing { pointer-events: none; animation: mobile-menu-out .28s cubic-bezier(.4, 0, 1, 1) both; }
+.mobile-menu.is-open > * { opacity: 0; animation: mobile-menu-item-in .42s cubic-bezier(.16, 1, .3, 1) both; }
+.mobile-menu.is-open > :nth-child(1) { animation-delay: 70ms; }
+.mobile-menu.is-open > :nth-child(2) { animation-delay: 105ms; }
+.mobile-menu.is-open > :nth-child(3) { animation-delay: 140ms; }
+.mobile-menu.is-open > :nth-child(4) { animation-delay: 175ms; }
+.mobile-menu.is-open > :nth-child(5) { animation-delay: 210ms; }
+.mobile-menu.is-open > :nth-child(6) { animation-delay: 245ms; }
+.mobile-menu.is-open > :nth-child(7) { animation-delay: 280ms; }
+.mobile-menu.is-open > :nth-child(8) { animation-delay: 315ms; }
+.mobile-menu.is-closing > * { animation: mobile-menu-item-out .16s ease both; }
 .admin-message-toast {
   position: fixed;
   z-index: 150;
@@ -43,5 +60,25 @@
 .admin-message-toast a small { color: #8f879d; }
 .admin-message-toast button { width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 9px; background: rgba(255, 255, 255, .05); color: #948b9f; cursor: pointer; }
 @keyframes admin-toast-in { from { opacity: 0; transform: translateY(16px) scale(.97); } }
+@keyframes mobile-menu-in {
+  from { opacity: 0; transform: translateY(-16px) scale(.985); clip-path: inset(0 0 100% 0); }
+  to { opacity: 1; transform: translateY(0) scale(1); clip-path: inset(0); }
+}
+@keyframes mobile-menu-out {
+  from { opacity: 1; transform: translateY(0) scale(1); clip-path: inset(0); }
+  to { opacity: 0; transform: translateY(-10px) scale(.99); clip-path: inset(0 0 100% 0); }
+}
+@keyframes mobile-menu-item-in {
+  from { opacity: 0; transform: translateY(-9px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes mobile-menu-item-out { to { opacity: 0; transform: translateY(-5px); } }
+@keyframes mobile-menu-icon-in {
+  from { opacity: 0; transform: rotate(-35deg) scale(.72); }
+  to { opacity: 1; transform: rotate(0) scale(1); }
+}
 @media (max-width: 620px) { .admin-message-toast { right: 14px; bottom: 14px; } }
-@media (prefers-reduced-motion: reduce) { .admin-message-toast { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .admin-message-toast, .menu-button svg, .mobile-menu, .mobile-menu > * { animation: none !important; }
+  .mobile-menu.is-open > * { opacity: 1; }
+}

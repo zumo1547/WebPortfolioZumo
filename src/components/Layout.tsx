@@ -1,5 +1,5 @@
 import { Bell, Github, LayoutDashboard, LogIn, LogOut, Menu, Settings, X, Zap } from 'lucide-react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { assetUrl, supabase } from '../lib/supabase'
@@ -15,19 +15,37 @@ const links = [
 
 export function Layout({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [menuMounted, setMenuMounted] = useState(false)
+  const closeMenuTimer = useRef<number | null>(null)
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [newMessage, setNewMessage] = useState<ContactMessage | null>(null)
   const { user, profile, isAdmin, signOut } = useAuth()
   const location = useLocation()
 
+  const openMenu = useCallback(() => {
+    if (closeMenuTimer.current) window.clearTimeout(closeMenuTimer.current)
+    setMenuMounted(true)
+    setMenuOpen(true)
+  }, [])
+
+  const closeMenu = useCallback(() => {
+    setMenuOpen(false)
+    if (closeMenuTimer.current) window.clearTimeout(closeMenuTimer.current)
+    closeMenuTimer.current = window.setTimeout(() => setMenuMounted(false), 280)
+  }, [])
+
   useEffect(() => {
-    if (!menuOpen) return
+    if (!menuMounted) return
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = previousOverflow }
-  }, [menuOpen])
+  }, [menuMounted])
 
-  useEffect(() => { setMenuOpen(false) }, [location.pathname])
+  useEffect(() => { closeMenu() }, [location.pathname, closeMenu])
+
+  useEffect(() => () => {
+    if (closeMenuTimer.current) window.clearTimeout(closeMenuTimer.current)
+  }, [])
 
   useEffect(() => {
     if (!isAdmin) {
@@ -66,7 +84,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <header className="site-header">
         <div className="rainbow-line" />
         <nav className="nav-wrap" aria-label="เมนูหลัก">
-          <Link to="/" className="brand" onClick={() => setMenuOpen(false)}>
+          <Link to="/" className="brand" onClick={closeMenu}>
             <span className="brand-mark"><img src={assetUrl('assets/Icon portfolio.png')} alt="" /></span>
             <span><strong>Portfolio</strong><small>ZUMO.DEV</small></span>
           </Link>
@@ -90,24 +108,24 @@ export function Layout({ children }: { children: ReactNode }) {
               <Link className="button small secondary" to="/login"><LogIn size={17} /> เข้าสู่ระบบ</Link>
             )}
           </div>
-          <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="เปิดเมนู">
+          <button className="menu-button" onClick={menuOpen ? closeMenu : openMenu} aria-expanded={menuOpen} aria-label={menuOpen ? 'ปิดเมนู' : 'เปิดเมนู'}>
             {menuOpen ? <X /> : <Menu />}
           </button>
         </nav>
       </header>
-      {menuOpen && (
-        <div className="mobile-menu" role="dialog" aria-modal="true" aria-label="เมนูหลัก">
+      {menuMounted && (
+        <div className={`mobile-menu ${menuOpen ? 'is-open' : 'is-closing'}`} role="dialog" aria-modal="true" aria-label="เมนูหลัก">
           <div className="mobile-menu-head"><span className="online-dot" /> NAVIGATION</div>
           {links.map((link) => (
-            <NavLink key={link.to} to={link.to} end={link.to === '/'} onClick={() => setMenuOpen(false)}>{link.label}<span>→</span></NavLink>
+            <NavLink key={link.to} to={link.to} end={link.to === '/'} onClick={closeMenu}>{link.label}<span>→</span></NavLink>
           ))}
           {user ? (
             <>
-              {isAdmin && <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard <span className="mobile-admin-status"><LayoutDashboard size={18} />{unreadMessages > 0 && <b>{unreadMessages}</b>}</span></Link>}
-              <Link to="/settings" onClick={() => setMenuOpen(false)}>Settings <Settings size={18} /></Link>
-              <button onClick={() => { void signOut(); setMenuOpen(false) }}>ออกจากระบบ <LogOut size={18} /></button>
+              {isAdmin && <Link to="/dashboard" onClick={closeMenu}>Dashboard <span className="mobile-admin-status"><LayoutDashboard size={18} />{unreadMessages > 0 && <b>{unreadMessages}</b>}</span></Link>}
+              <Link to="/settings" onClick={closeMenu}>Settings <Settings size={18} /></Link>
+              <button onClick={() => { void signOut(); closeMenu() }}>ออกจากระบบ <LogOut size={18} /></button>
             </>
-          ) : <Link to="/login" onClick={() => setMenuOpen(false)}>เข้าสู่ระบบ <LogIn size={18} /></Link>}
+          ) : <Link to="/login" onClick={closeMenu}>เข้าสู่ระบบ <LogIn size={18} /></Link>}
         </div>
       )}
       {isAdmin && newMessage && <aside className="admin-message-toast" role="status" aria-live="polite">
