@@ -9,6 +9,8 @@ import {
   Landmark,
   Link2,
   Pencil,
+  Pause,
+  Play,
   Plus,
   Search,
   School,
@@ -201,11 +203,68 @@ export function ProjectsPage() {
 
 export function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
   const [imageIndex, setImageIndex] = useState(0)
+  const [autoPaused, setAutoPaused] = useState(false)
+  const [hoverPaused, setHoverPaused] = useState(false)
+  const [autoProgress, setAutoProgress] = useState(0)
+  const elapsedRef = useRef(0)
+  const lastFrameRef = useRef<number | null>(null)
+  const lastProgressUpdateRef = useRef(0)
   const images = project.images?.length ? project.images : ['/assets/Icon portfolio.png']
-  const selectImage = (offset: number) => setImageIndex((current) => (current + offset + images.length) % images.length)
+  const galleryPaused = autoPaused || hoverPaused
+
+  const selectImage = (offset: number) => {
+    setAutoPaused(true)
+    setImageIndex((current) => (current + offset + images.length) % images.length)
+  }
+
+  const goToImage = (index: number) => {
+    setAutoPaused(true)
+    setImageIndex(index)
+  }
+
+  useEffect(() => {
+    elapsedRef.current = 0
+    lastFrameRef.current = null
+    lastProgressUpdateRef.current = 0
+    setAutoProgress(0)
+  }, [imageIndex])
+
+  useEffect(() => {
+    if (images.length <= 1 || galleryPaused) {
+      lastFrameRef.current = null
+      return
+    }
+
+    const duration = 6000
+    let frame = 0
+    const tick = (now: number) => {
+      if (lastFrameRef.current === null) lastFrameRef.current = now
+      const elapsed = Math.min(duration, elapsedRef.current + now - lastFrameRef.current)
+      elapsedRef.current = elapsed
+      lastFrameRef.current = now
+      if (now - lastProgressUpdateRef.current >= 80 || elapsed >= duration) {
+        lastProgressUpdateRef.current = now
+        setAutoProgress((elapsed / duration) * 100)
+      }
+
+      if (elapsed >= duration) {
+        elapsedRef.current = 0
+        lastFrameRef.current = now
+        lastProgressUpdateRef.current = now
+        setAutoProgress(0)
+        setImageIndex((current) => (current + 1) % images.length)
+      }
+      frame = requestAnimationFrame(tick)
+    }
+
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [galleryPaused, images.length])
 
   useEffect(() => {
     const changeImage = (event: KeyboardEvent) => {
+      if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return
+      setAutoPaused(true)
       if (event.key === 'ArrowRight') setImageIndex((current) => (current + 1) % images.length)
       if (event.key === 'ArrowLeft') setImageIndex((current) => (current - 1 + images.length) % images.length)
     }
@@ -223,7 +282,7 @@ export function ProjectModal({ project, onClose }: { project: Project; onClose: 
         </div>
       </header>
       <div className="project-modal-scroll">
-        <div className="modal-image">
+        <div className="modal-image" onMouseEnter={() => setHoverPaused(true)} onMouseLeave={() => setHoverPaused(false)} onClick={() => setAutoPaused(true)}>
           <img
             key={`${images[imageIndex]}-${imageIndex}`}
             src={projectImageUrl(images[imageIndex])}
@@ -240,10 +299,22 @@ export function ProjectModal({ project, onClose }: { project: Project; onClose: 
             <span className="gallery-count">{imageIndex + 1} / {images.length}</span>
           </>}
         </div>
-        {images.length > 1 && <nav className="gallery-pagination" aria-label="เลือกรูปภาพโปรเจกต์">
-          <span>รูปภาพ</span>
-          <div>{images.map((image, index) => <button type="button" className={index === imageIndex ? 'active' : ''} onClick={() => setImageIndex(index)} aria-current={index === imageIndex ? 'true' : undefined} aria-label={`ดูรูปที่ ${index + 1}`} key={`${image}-${index}`}>{String(index + 1).padStart(2, '0')}</button>)}</div>
-        </nav>}
+        {images.length > 1 && <>
+          <div className={`gallery-autoplay ${galleryPaused ? 'paused' : ''}`}>
+            <button type="button" onClick={(event) => { event.stopPropagation(); setAutoPaused((paused) => !paused) }} aria-label={autoPaused ? 'เล่นสไลด์อัตโนมัติ' : 'หยุดสไลด์อัตโนมัติ'} aria-pressed={autoPaused}>
+              {autoPaused ? <Play size={14} fill="currentColor" /> : <Pause size={14} fill="currentColor" />}
+              <span>{autoPaused ? 'เล่นอัตโนมัติ' : hoverPaused ? 'พักชั่วคราว' : 'กำลังเล่นอัตโนมัติ'}</span>
+            </button>
+            <div className="gallery-progress" role="progressbar" aria-label="เวลาจนถึงรูปถัดไป" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(autoProgress)}>
+              <span style={{ transform: `scaleX(${autoProgress / 100})` }} />
+            </div>
+            <small>{galleryPaused ? (autoPaused ? 'กดเล่นเพื่อดูภาพต่อ' : 'เลื่อนต่อเมื่อเอาเมาส์ออก') : `รูปถัดไปใน ${Math.max(1, Math.ceil(6 - autoProgress * .06))} วินาที`}</small>
+          </div>
+          <nav className="gallery-pagination" aria-label="เลือกรูปภาพโปรเจกต์">
+            <span>รูปภาพ</span>
+            <div>{images.map((image, index) => <button type="button" className={index === imageIndex ? 'active' : ''} onClick={() => goToImage(index)} aria-current={index === imageIndex ? 'true' : undefined} aria-label={`ดูรูปที่ ${index + 1}`} key={`${image}-${index}`}>{String(index + 1).padStart(2, '0')}</button>)}</div>
+          </nav>
+        </>}
         <div className="modal-content">
           <TagBadges tags={project.tags || []} />
           <h2 id="project-modal-title">{project.name}</h2>
