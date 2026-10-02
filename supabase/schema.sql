@@ -204,7 +204,10 @@ create policy "Admins delete messages" on public.contact_messages for delete usi
 drop policy if exists "Admins read activity" on public.admin_activity;
 create policy "Admins read activity" on public.admin_activity for select using (public.is_admin());
 
-revoke update on public.profiles from anon, authenticated;
+revoke all on public.profiles from anon;
+revoke update on public.profiles from authenticated;
+revoke insert, update, delete on public.projects from anon;
+revoke select, update, delete on public.contact_messages from anon;
 revoke all on public.admin_activity from anon, authenticated;
 revoke all on function public.admin_delete_project(bigint) from public;
 revoke all on function public.admin_set_user_role(uuid, text) from public;
