@@ -26,9 +26,9 @@ import {
   Youtube,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 import { Seo } from '../components/Seo'
 import { useAuth } from '../context/AuthContext'
@@ -134,6 +134,7 @@ function LinkButtons({ links, compact = false, onClick }: { links: ProjectLinks;
 export function ProjectsPage() {
   const { user, isAdmin } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const { slug } = useParams<{ slug?: string }>()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
@@ -142,6 +143,13 @@ export function ProjectsPage() {
   const [selected, setSelected] = useState<Project | null>(null)
   const [editing, setEditing] = useState<Project | null | 'new'>(null)
   const [deleting, setDeleting] = useState<Project | null>(null)
+
+  const closeSelected = useCallback(() => {
+    setSelected(null)
+    const openedFromProjectList = Boolean((location.state as { projectOverlay?: boolean } | null)?.projectOverlay)
+    if (openedFromProjectList) void navigate(-1)
+    else void navigate('/projects', { replace: true })
+  }, [location.state, navigate])
 
   const loadProjects = async () => {
     setLoading(true)
@@ -169,17 +177,14 @@ export function ProjectsPage() {
       if (event.key !== 'Escape') return
       if (editing) setEditing(null)
       else if (deleting) setDeleting(null)
-      else {
-        setSelected(null)
-        void navigate('/projects')
-      }
+      else closeSelected()
     }
     document.addEventListener('keydown', closeOnEscape)
     return () => {
       document.body.style.overflow = previousOverflow
       document.removeEventListener('keydown', closeOnEscape)
     }
-  }, [selected, editing, deleting, navigate])
+  }, [selected, editing, deleting, closeSelected])
 
   const normalizedQuery = query.trim().toLocaleLowerCase('th')
   const visible = useMemo(() => projects.filter((project) => {
@@ -191,7 +196,6 @@ export function ProjectsPage() {
 
   const toggleTag = (tag: string) => setActiveTags((current) => current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag])
   const clearFilters = () => { setQuery(''); setActiveTags([]) }
-  const closeSelected = () => { setSelected(null); void navigate('/projects') }
   const selectedPath = selected ? `/projects/${projectSlug(selected)}` : '/projects'
   const selectedDescription = selected ? stripDescriptionFormatting(selected.description).replace(/\s+/g, ' ').slice(0, 155) : 'รวมผลงาน Game, IoT, Robotics, AI และ Web Development ของ Wutthipat Sriyangnok'
 
@@ -236,7 +240,10 @@ export function ProjectsPage() {
       </div> : <div className="project-grid">
         {visible.map((project, index) => (
           <article className="project-card reveal" style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }} key={project.id}>
-            <button className="project-card-open" onClick={() => void navigate(`/projects/${projectSlug(project)}`)} aria-label={`เปิดรายละเอียด ${project.name}`}>
+            <button className="project-card-open" onClick={() => {
+              setSelected(project)
+              void navigate(`/projects/${projectSlug(project)}`, { state: { projectOverlay: true } })
+            }} aria-label={`เปิดรายละเอียด ${project.name}`}>
               <div className="project-cover">
                 <img src={projectImageUrl(project.images?.[0])} alt={project.name} loading="lazy" />
                 <span className="project-cover-shade" />
@@ -259,7 +266,7 @@ export function ProjectsPage() {
 
       {!loading && !visible.length && <div className="empty-state"><Search size={32} /><h2>ไม่พบโปรเจกต์ที่ค้นหา</h2><p>ลองเปลี่ยนคำค้นหาหรือเลือกแท็กอื่น</p><button className="button secondary small" onClick={clearFilters}>ล้างตัวกรอง</button></div>}
 
-      {selected && createPortal(<div className="projects-page modal-portal"><ProjectModal project={selected} onClose={closeSelected} /></div>, document.body)}
+      {selected && createPortal(<div className="projects-page modal-portal"><ProjectModal key={selected.id} project={selected} onClose={closeSelected} /></div>, document.body)}
       {editing && isAdmin && user && createPortal(<div className="projects-page modal-portal"><ProjectEditor project={editing === 'new' ? null : editing} userId={user.id} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); void loadProjects() }} /></div>, document.body)}
       {deleting && isAdmin && user && createPortal(<div className="projects-page modal-portal"><ProjectEditor project={deleting} userId={user.id} initialDeleteArmed onClose={() => setDeleting(null)} onSaved={() => { setDeleting(null); void loadProjects() }} /></div>, document.body)}
     </section>

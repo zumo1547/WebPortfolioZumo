@@ -21,6 +21,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const [newMessage, setNewMessage] = useState<ContactMessage | null>(null)
   const { user, profile, isAdmin, signOut } = useAuth()
   const location = useLocation()
+  const pageKey = location.pathname.startsWith('/projects') ? '/projects' : location.pathname
 
   const openMenu = useCallback(() => {
     if (closeMenuTimer.current) window.clearTimeout(closeMenuTimer.current)
@@ -133,7 +134,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <Link to="/dashboard" onClick={() => setNewMessage(null)}><span>มีข้อความใหม่จากหน้า Contact</span><b>{newMessage.name}</b><small>{newMessage.subject}</small></Link>
         <button type="button" onClick={() => setNewMessage(null)} aria-label="ปิดการแจ้งเตือน"><X size={16} /></button>
       </aside>}
-      <main key={location.pathname}>{children}</main>
+      <main key={pageKey}>{children}</main>
       <footer className="site-footer">
         <div><Zap size={15} /> ZUMO DEV PORTFOLIO</div>
         <span>React · TypeScript · Supabase</span>

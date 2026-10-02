@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useRef } from 'react'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { Loading } from './components/Loading'
@@ -17,7 +17,13 @@ const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then((module) => ({
 
 function ScrollToTop() {
   const { pathname } = useLocation()
-  useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }) }, [pathname])
+  const previousPath = useRef(pathname)
+
+  useEffect(() => {
+    const stayedInsideProjects = previousPath.current.startsWith('/projects') && pathname.startsWith('/projects')
+    if (!stayedInsideProjects) window.scrollTo({ top: 0, behavior: 'auto' })
+    previousPath.current = pathname
+  }, [pathname])
   return null
 }
 
