@@ -1,7 +1,6 @@
 import {
   ArrowRight,
   Atom,
-  BarChart3,
   Bot,
   Boxes,
   Braces,
@@ -9,27 +8,18 @@ import {
   Code2,
   Cpu,
   Database,
-  ChevronLeft,
-  ChevronRight,
   Film,
   FolderOpen,
   Gamepad2,
   Github,
   Medal,
   Microscope,
-  Pause,
-  Play,
-  Presentation,
   Radio,
   ScanSearch,
   ServerCog,
-  Timer,
   Trophy,
-  X,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { Seo } from '../components/Seo'
 import { techStack } from '../data'
@@ -82,158 +72,23 @@ const techIcons: Record<string, LucideIcon> = {
   server: ServerCog,
 }
 
-const reviewSlides = [
-  {
-    code: '01 / PROFILE',
-    title: 'Wutthipat Sriyangnok',
-    subtitle: 'นักเรียนมัธยมศึกษาปีที่ 6 · Science & Innovation',
-    metric: 'M.6',
-    metricLabel: 'CURRENT LEVEL',
-    description: 'ผมชอบเริ่มจากโจทย์ที่พบรอบตัว แล้วลงมือเขียนโค้ด ต่อวงจร ทำต้นแบบ และทดสอบจนเห็นผลจริง',
-    facts: ['IoT & Embedded Systems', 'AI & Data', 'Web & Game Development'],
-    link: '/about',
-    linkLabel: 'ดูประวัติและเส้นทางการเรียนรู้',
-    tone: 'purple',
-  },
-  {
-    code: '02 / ENGINEERING',
-    title: 'ESP32-Powered Microfiber Filter',
-    subtitle: 'เครื่องกรองไมโครไฟเบอร์จากน้ำทิ้งเครื่องซักผ้า',
-    metric: '91.97%',
-    metricLabel: 'FILTER EFFICIENCY',
-    description: 'รับผิดชอบการเขียนโค้ด ESP32 ออกแบบระบบกรอง และทดสอบเวลาในการตกตะกอนกับตาข่าย 500 mesh',
-    facts: ['ลดเส้นใยจาก 137 เหลือ 9 ชิ้น', 'เหรียญทองแดงรอบชิงชนะเลิศ', 'ออกแบบเพื่อพัฒนาต่อเป็น IoT'],
-    link: '/projects/microfiber-filter-esp32',
-    linkLabel: 'เปิดรายละเอียดโครงงาน',
-    tone: 'blue',
-  },
-  {
-    code: '03 / AIoT & DATA',
-    title: 'Micro:bit Thailand Challenge 2026',
-    subtitle: 'ระบบวิเคราะห์ข้อมูลและควบคุมการเพาะปลูกอัจฉริยะ',
-    metric: 'BRONZE',
-    metricLabel: 'NATIONAL FINAL',
-    description: 'ทำหน้าที่หัวหน้าทีม เชื่อมต่อเซนเซอร์ วิเคราะห์ข้อมูล และประยุกต์ AI ตรวจจับศัตรูพืชเพื่อควบคุมระบบจริง',
-    facts: ['Soil & Weather Sensors', 'Micro:bit Automation', 'Computer Vision'],
-    link: '/projects/microbit-thailand-challenge-2026',
-    linkLabel: 'ดูผลงาน AIoT',
-    tone: 'green',
-  },
-  {
-    code: '04 / ACHIEVEMENTS',
-    title: 'ผลงานจากสนามจริง',
-    subtitle: 'การแข่งขัน โครงงาน และกิจกรรมที่นำความรู้ไปใช้งาน',
-    metric: 'WINNER',
-    metricLabel: 'SCIENCE FILM FESTIVAL',
-    description: 'รางวัลชนะเลิศระดับมัธยมปลายจาก Science Film Festival 2025 พร้อมผลงานด้านวิศวกรรม AIoT และ AI Prompt',
-    facts: ['Science Film Festival Winner', 'OCOP Bronze Medal', 'SPU AI Hackathon Top 30'],
-    link: '/projects',
-    linkLabel: 'เปิดคลังผลงานทั้งหมด',
-    tone: 'pink',
-  },
-] as const
-
-function JudgeReview({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [active, setActive] = useState(0)
-  const [paused, setPaused] = useState(false)
-  const [hoverPaused, setHoverPaused] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const slide = reviewSlides[active]
-  const isPaused = paused || hoverPaused
-
-  useEffect(() => {
-    if (!open) return
-    setActive(0)
-    setProgress(0)
-    setPaused(false)
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
-    document.addEventListener('keydown', closeOnEscape)
-    return () => {
-      document.body.style.overflow = previousOverflow
-      document.removeEventListener('keydown', closeOnEscape)
-    }
-  }, [open, onClose])
-
-  useEffect(() => {
-    if (!open || isPaused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const interval = window.setInterval(() => {
-      setProgress((current) => {
-        if (current < 100) return Math.min(100, current + (100 / 150))
-        setActive((currentSlide) => (currentSlide + 1) % reviewSlides.length)
-        return 0
-      })
-    }, 100)
-    return () => window.clearInterval(interval)
-  }, [open, isPaused])
-
-  const goTo = (index: number) => {
-    setActive((index + reviewSlides.length) % reviewSlides.length)
-    setProgress(0)
-  }
-
-  if (!open) return null
-  return createPortal(<div className="judge-review-backdrop" role="presentation">
-    <section className={`judge-review judge-${slide.tone}`} role="dialog" aria-modal="true" aria-labelledby="judge-review-title" onMouseEnter={() => setHoverPaused(true)} onMouseLeave={() => setHoverPaused(false)}>
-      <header className="judge-review-header">
-        <div><Presentation size={18} /><span>ADMISSION REVIEW</span><b>60 SECOND PORTFOLIO</b></div>
-        <div className="judge-review-actions">
-          <button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? 'เล่นการนำเสนอต่อ' : 'หยุดการนำเสนอชั่วคราว'}>{paused ? <Play size={17} /> : <Pause size={17} />}</button>
-          <button type="button" onClick={onClose} aria-label="ปิดโหมดกรรมการ"><X size={20} /></button>
-        </div>
-      </header>
-      <div className="judge-progress" aria-label={`หน้าที่ ${active + 1} จาก ${reviewSlides.length}`}>
-        {reviewSlides.map((item, index) => <button type="button" className={index === active ? 'active' : index < active ? 'passed' : ''} onClick={() => goTo(index)} aria-label={`เปิด ${item.title}`} key={item.code}><span style={{ transform: `scaleX(${(index === active ? progress : index < active ? 100 : 0) / 100})` }} /></button>)}
-      </div>
-      <div className="judge-review-body" key={slide.code}>
-        <div className="judge-story">
-          <span className="judge-code">// {slide.code}</span>
-          <h2 id="judge-review-title">{slide.title}</h2>
-          <h3>{slide.subtitle}</h3>
-          <p>{slide.description}</p>
-          <ul>{slide.facts.map((fact) => <li key={fact}><span />{fact}</li>)}</ul>
-          <Link to={slide.link} onClick={onClose}>{slide.linkLabel}<ArrowRight size={17} /></Link>
-        </div>
-        <div className="judge-metric">
-          <div className="metric-rings"><i /><i /><i /><BarChart3 /></div>
-          <span>{slide.metricLabel}</span>
-          <strong>{slide.metric}</strong>
-          <small>VERIFIED PORTFOLIO DATA</small>
-        </div>
-      </div>
-      <footer className="judge-review-footer">
-        <button type="button" onClick={() => goTo(active - 1)} aria-label="หน้าก่อนหน้า"><ChevronLeft /> ก่อนหน้า</button>
-        <span>{String(active + 1).padStart(2, '0')} <i>/</i> {String(reviewSlides.length).padStart(2, '0')}</span>
-        <button type="button" onClick={() => goTo(active + 1)} aria-label="หน้าถัดไป">ถัดไป <ChevronRight /></button>
-      </footer>
-    </section>
-  </div>, document.body)
-}
-
 export function HomePage() {
-  const [reviewOpen, setReviewOpen] = useState(false)
   return (
     <>
       <Seo title="Wutthipat Sriyangnok — Creative Developer Portfolio" description="แฟ้มสะสมผลงานของ Wutthipat Sriyangnok นักเรียนมัธยมศึกษาปีที่ 6 รวมผลงาน IoT, AI, Robotics, Game Development และ Web Development" path="/" />
       <section className="hero section-pad home-hero">
         <div className="hero-copy reveal">
-          <div className="eyebrow"><span className="online-dot" /> ADMISSION PORTFOLIO · READY TO REVIEW</div>
-          <h1><small>I BUILD</small>IDEAS INTO<br /><span>WORKING SYSTEMS.</span></h1>
-          <p className="hero-thai"><strong>วุฒิภัทร ศรียางนอก</strong> — นักเรียน ม.6 ที่ชอบเขียนโค้ด ต่อวงจร และทดสอบของจริง<br />ผลงานครอบคลุม IoT, AI, Robotics, Game และ Web Development</p>
+          <div className="eyebrow"><span className="online-dot" /> PORTFOLIO · ZUMO DEV · {new Date().getFullYear()}</div>
+          <h1>CREATIVE<br /><span>DEVELOPER</span></h1>
+          <p className="hero-thai">วุฒิภัทร ศรียางนอก — นักเรียนสายวิทยาศาสตร์และนวัตกรรม<br />สร้างเกม ระบบ IoT หุ่นยนต์ AI และเว็บจากการทดลองจริง</p>
           <div className="home-intro-tags" aria-label="ข้อมูลโดยย่อ">
             <span>มัธยมศึกษาปีที่ 6</span><span>Science &amp; Innovation</span><span>Samut Prakan</span>
           </div>
           <div className="hero-actions">
-            <button className="button judge-mode-button" type="button" onPointerDown={() => setReviewOpen(true)} onMouseDown={() => setReviewOpen(true)} onClick={() => setReviewOpen(true)}><Timer size={18} /> ดูแฟ้มฉบับ 60 วินาที <ArrowRight size={17} /></button>
-            <Link className="button secondary" to="/projects"><FolderOpen size={18} /> เปิดคลังผลงาน</Link>
+            <Link className="button" to="/projects"><FolderOpen size={18} /> สำรวจโปรเจกต์ <ArrowRight size={17} /></Link>
+            <Link className="button secondary" to="/about">ประวัติและรางวัล</Link>
           </div>
-          <div className="hero-proof-stats" aria-label="ผลงานโดยย่อ">
-            <div><strong>91.97%</strong><span>FILTER TEST</span></div>
-            <div><strong>WINNER</strong><span>FILM FESTIVAL</span></div>
-            <div><strong>TOP 30</strong><span>AI HACKATHON</span></div>
-          </div>
-          <div className="hero-status"><Radio size={16} /><span>AVAILABLE FOR ADMISSION REVIEW · {new Date().getFullYear()}</span></div>
+          <div className="hero-status"><Radio size={16} /><span>LEARNING · BUILDING · IMPROVING</span></div>
         </div>
 
         <div className="hero-visual reveal delay-1">
@@ -249,11 +104,8 @@ export function HomePage() {
             <Trophy size={19} />
             <div><span>LATEST HIGHLIGHT</span><b>Science Film Festival 2025</b><small>รางวัลชนะเลิศระดับมัธยมปลาย</small></div>
           </div>
-          <div className="hero-review-stamp"><span>PORTFOLIO</span><strong>{new Date().getFullYear()}</strong><small>SCIENCE &amp; INNOVATION</small></div>
         </div>
       </section>
-
-      <JudgeReview open={reviewOpen} onClose={() => setReviewOpen(false)} />
 
       <div className="marquee"><div>{[...marquee, ...marquee].map((item, i) => <span key={`${item}-${i}`}><i />{item}</span>)}</div></div>
 
