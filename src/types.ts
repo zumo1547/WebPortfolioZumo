@@ -13,6 +13,8 @@ export interface ProjectLinks {
   drive?: string
 }
 
+export type AwardType = 'winner' | 'runner_up_1' | 'runner_up_2' | 'gold' | 'silver' | 'bronze' | 'finalist' | 'other'
+
 export interface Project {
   id: number
   name: string
@@ -20,6 +22,9 @@ export interface Project {
   images: string[]
   tags: string[]
   links: ProjectLinks
+  award_type: AwardType | null
+  award_title: string | null
+  award_rank: number | null
   created_at: string
   updated_at: string
 }
@@ -30,6 +35,9 @@ export interface ProjectInput {
   tags: string[]
   links: ProjectLinks
   images: string[]
+  award_type: AwardType | null
+  award_title: string | null
+  award_rank: number | null
 }
 
 export interface ContactMessage {

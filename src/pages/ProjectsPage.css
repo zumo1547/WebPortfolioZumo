@@ -107,8 +107,23 @@
 .projects-page .tag-filters .clear-filter { color: #fca5a5; border-color: rgba(248, 113, 113, .24); }
 
 .projects-page .result-count {
-  margin: 10px 0 0;
+  margin: 0;
   color: #777087;
+}
+
+.project-result-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 10px;
+}
+.project-result-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #8b7aa3;
+  font: .57rem 'Share Tech Mono';
 }
 
 .projects-page .project-grid {
@@ -227,6 +242,33 @@
 .project-tag.tag-school { color: #f9a8d4; border-color: #ec4899; background: rgba(236, 72, 153, .13); box-shadow: 0 0 9px rgba(236, 72, 153, .17); }
 .project-tag.tag-activity { color: #fed7aa; border-color: #fb923c; background: rgba(251, 146, 60, .13); box-shadow: 0 0 9px rgba(251, 146, 60, .17); }
 .project-tag.tag-default { color: #ddd6fe; border-color: #8b5cf6; background: rgba(139, 92, 246, .14); }
+
+.project-award {
+  width: fit-content;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 7px;
+  padding: 5px 9px;
+  border: 1px solid rgba(250, 204, 21, .52);
+  border-radius: 999px;
+  background: linear-gradient(110deg, rgba(133, 77, 14, .28), rgba(234, 179, 8, .09));
+  color: #fde68a;
+  box-shadow: 0 0 15px rgba(234, 179, 8, .1);
+  font-size: .64rem;
+  font-weight: 800;
+}
+.project-award svg { flex: none; color: #facc15; }
+.project-award span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-award small {
+  flex: none;
+  padding-left: 6px;
+  border-left: 1px solid rgba(253, 230, 138, .22);
+  color: #fef3c7;
+  font: .56rem 'Share Tech Mono';
+}
+.project-award.large { margin-bottom: 12px; padding: 7px 11px; font-size: .76rem; }
 
 .projects-page .project-body h2 {
   min-height: 2.7em;
@@ -729,6 +771,70 @@
 .editor-tag.checked.tag-activity { color: #fb923c; border-color: #fb923c; background: rgba(251, 146, 60, .11); box-shadow: 0 0 14px rgba(251, 146, 60, .14); }
 .editor-tag span { display: inline-flex; align-items: center; gap: 6px; color: #c7c1d0; font-weight: 700; }
 
+.award-editor-section { overflow: hidden; }
+.projects-page .award-toggle {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, .14);
+  border-radius: 12px;
+  background: rgba(7, 5, 15, .62);
+  cursor: pointer;
+  transition: border-color .2s, background .2s, box-shadow .2s;
+}
+.projects-page .award-toggle.checked {
+  border-color: rgba(250, 204, 21, .45);
+  background: rgba(234, 179, 8, .07);
+  box-shadow: 0 0 22px rgba(234, 179, 8, .07);
+}
+.award-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.award-toggle > i {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, .18);
+  border-radius: 7px;
+  color: #17100a;
+  font-style: normal;
+  font-weight: 900;
+}
+.award-toggle.checked > i { border-color: #facc15; background: #facc15; }
+.award-toggle > span { min-width: 0; display: flex; flex-direction: column; }
+.award-toggle b { color: #ded7e7; font-size: .76rem; }
+.award-toggle small { margin-top: 2px; color: #756e80; font-size: .63rem; }
+.award-editor-fields { display: grid; gap: 11px; margin-top: 12px; }
+.award-option-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.award-option-grid button {
+  min-height: 37px;
+  padding: 6px 7px;
+  border: 1px solid rgba(148, 163, 184, .15);
+  border-radius: 9px;
+  background: rgba(7, 5, 15, .65);
+  color: #8d8698;
+  font-size: .66rem;
+  cursor: pointer;
+  transition: color .18s, border-color .18s, background .18s, transform .18s;
+}
+.award-option-grid button:hover { color: #fef3c7; border-color: rgba(250, 204, 21, .38); }
+.award-option-grid button.active { color: #fef3c7; border-color: #eab308; background: rgba(234, 179, 8, .13); box-shadow: 0 0 12px rgba(234, 179, 8, .1); transform: translateY(-1px); }
+.award-detail-fields { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 9px; }
+.award-detail-fields label { margin: 0; }
+.award-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px dashed rgba(250, 204, 21, .2);
+  border-radius: 10px;
+  background: rgba(234, 179, 8, .025);
+}
+.award-preview > span { color: #746d80; font: .56rem 'Share Tech Mono'; }
+.award-preview .project-award { margin: 0; }
+
 .editor-links { display: grid; gap: 9px; }
 .editor-links label { margin: 0; position: relative; }
 .editor-links label > span {
@@ -948,6 +1054,10 @@
   .editor-modal-scroll { padding: 14px 13px 22px; }
   .editor-section { padding: 14px; }
   .projects-page .editor-tags { grid-template-columns: 1fr; }
+  .project-result-meta { flex-direction: column; gap: 4px; }
+  .award-option-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .award-detail-fields { grid-template-columns: 1fr; }
+  .award-preview { align-items: flex-start; flex-direction: column; }
   .projects-page .existing-images { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .projects-page .editor-actions { bottom: -22px; margin: 16px -13px -22px; padding: 12px 13px; }
   .projects-page .editor-actions .button { flex: 1; padding-inline: 10px; }

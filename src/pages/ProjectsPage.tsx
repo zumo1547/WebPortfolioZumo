@@ -1,6 +1,7 @@
 import {
   ChevronLeft,
   ChevronRight,
+  ArrowDownWideNarrow,
   ExternalLink,
   Github,
   Globe2,
@@ -29,11 +30,23 @@ import { PageHeader } from '../components/PageHeader'
 import { useAuth } from '../context/AuthContext'
 import { fallbackProjects, projectTags } from '../data'
 import { MAX_PROJECT_IMAGE_BYTES, optimizeProjectImage, PROJECT_IMAGE_ACCEPT } from '../lib/imageOptimization'
+import { sortProjectsByImportance } from '../lib/projectRanking'
 import { projectImageUrl, supabase } from '../lib/supabase'
-import type { Project, ProjectInput, ProjectLinks } from '../types'
+import type { AwardType, Project, ProjectInput, ProjectLinks } from '../types'
 import './ProjectsPage.css'
 
-const emptyInput: ProjectInput = { name: '', description: '', images: [], tags: ['งานในโรงเรียน'], links: {} }
+const emptyInput: ProjectInput = { name: '', description: '', images: [], tags: ['งานในโรงเรียน'], links: {}, award_type: null, award_title: null, award_rank: null }
+
+const awardOptions: Array<{ value: AwardType; label: string; title: string; rank: number | null }> = [
+  { value: 'winner', label: 'ชนะเลิศ', title: 'ชนะเลิศ', rank: 1 },
+  { value: 'runner_up_1', label: 'รองชนะเลิศ 1', title: 'รองชนะเลิศอันดับ 1', rank: 2 },
+  { value: 'runner_up_2', label: 'รองชนะเลิศ 2', title: 'รองชนะเลิศอันดับ 2', rank: 3 },
+  { value: 'gold', label: 'เหรียญทอง', title: 'เหรียญทอง', rank: null },
+  { value: 'silver', label: 'เหรียญเงิน', title: 'เหรียญเงิน', rank: null },
+  { value: 'bronze', label: 'เหรียญทองแดง', title: 'เหรียญทองแดง', rank: null },
+  { value: 'finalist', label: 'เข้ารอบชิง', title: 'เข้ารอบชิงชนะเลิศ', rank: null },
+  { value: 'other', label: 'รางวัลอื่น', title: 'รางวัลจากการแข่งขัน', rank: null },
+]
 
 const tagMeta: Record<string, { icon: LucideIcon; tone: string }> = {
   'ระดับประเทศ': { icon: Trophy, tone: 'national' },
@@ -81,6 +94,16 @@ function TagBadges({ tags }: { tags: string[] }) {
   </div>
 }
 
+function AwardBadge({ project, large = false }: { project: Project; large?: boolean }) {
+  if (!project.award_type || !project.award_title) return null
+  const hasRankInTitle = /อันดับ\s*\d/.test(project.award_title)
+  return <div className={`project-award ${large ? 'large' : ''}`}>
+    <Trophy size={large ? 17 : 13} aria-hidden="true" />
+    <span>{project.award_title}</span>
+    {project.award_rank && !hasRankInTitle && <small>อันดับ {project.award_rank}</small>}
+  </div>
+}
+
 function LinkButtons({ links, compact = false, onClick }: { links: ProjectLinks; compact?: boolean; onClick?: (event: MouseEvent) => void }) {
   const github = safeExternalUrl(links.github)
   const youtube = safeExternalUrl(links.youtube)
@@ -107,7 +130,7 @@ export function ProjectsPage() {
   const loadProjects = async () => {
     setLoading(true)
     const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false })
-    setProjects(error ? fallbackProjects : (data as Project[] || []))
+    setProjects(sortProjectsByImportance(error ? fallbackProjects : (data as Project[] || [])))
     setLoading(false)
   }
 
@@ -132,7 +155,7 @@ export function ProjectsPage() {
 
   const normalizedQuery = query.trim().toLocaleLowerCase('th')
   const visible = useMemo(() => projects.filter((project) => {
-    const searchable = `${project.name} ${project.description} ${(project.tags || []).join(' ')}`.toLocaleLowerCase('th')
+    const searchable = `${project.name} ${project.description} ${project.award_title || ''} ${(project.tags || []).join(' ')}`.toLocaleLowerCase('th')
     const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery)
     const matchesTags = !activeTags.length || activeTags.some((tag) => project.tags?.includes(tag))
     return matchesQuery && matchesTags
@@ -164,7 +187,10 @@ export function ProjectsPage() {
           })}
           {(activeTags.length > 0 || query) && <button className="clear-filter" onClick={clearFilters}><X size={14} /> ล้างตัวกรอง</button>}
         </div>
-        <div className="result-count" aria-live="polite">{loading ? 'กำลังโหลดผลงาน...' : `แสดง ${visible.length} จาก ${projects.length} โปรเจกต์`}</div>
+        <div className="project-result-meta">
+          <div className="result-count" aria-live="polite">{loading ? 'กำลังโหลดผลงาน...' : `แสดง ${visible.length} จาก ${projects.length} โปรเจกต์`}</div>
+          <span><ArrowDownWideNarrow size={13} /> เรียงระดับสูงสุดและรางวัลก่อน</span>
+        </div>
       </div>
 
       {loading ? <div className="project-grid project-skeleton-grid" aria-label="กำลังโหลด">
@@ -179,6 +205,7 @@ export function ProjectsPage() {
                 {project.images?.length > 1 && <span className="image-count"><Images size={14} /> {project.images.length}</span>}
               </div>
               <div className="project-body">
+                <AwardBadge project={project} />
                 <TagBadges tags={project.tags || []} />
                 <h2>{project.name}</h2>
                 <p>{stripDescriptionFormatting(project.description)}</p>
@@ -316,6 +343,7 @@ export function ProjectModal({ project, onClose }: { project: Project; onClose: 
           </nav>
         </>}
         <div className="modal-content">
+          <AwardBadge project={project} large />
           <TagBadges tags={project.tags || []} />
           <h2 id="project-modal-title">{project.name}</h2>
           <p className="formatted-description"><FormattedDescription text={project.description} /></p>
@@ -326,7 +354,16 @@ export function ProjectModal({ project, onClose }: { project: Project; onClose: 
 }
 
 export function ProjectEditor({ project, userId, onClose, onSaved, initialDeleteArmed = false }: { project: Project | null; userId: string; onClose: () => void; onSaved: () => void; initialDeleteArmed?: boolean }) {
-  const [value, setValue] = useState<ProjectInput>(project ? { name: project.name, description: project.description, tags: project.tags || [], links: project.links || {}, images: project.images || [] } : emptyInput)
+  const [value, setValue] = useState<ProjectInput>(project ? {
+    name: project.name,
+    description: project.description,
+    tags: project.tags || [],
+    links: project.links || {},
+    images: project.images || [],
+    award_type: project.award_type || null,
+    award_title: project.award_title || null,
+    award_rank: project.award_rank || null,
+  } : emptyInput)
   const [files, setFiles] = useState<File[]>([])
   const [saving, setSaving] = useState(false)
   const [savingStatus, setSavingStatus] = useState('')
@@ -390,6 +427,25 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
   }
 
   const toggleEditorTag = (tag: string) => setValue({ ...value, tags: value.tags.includes(tag) ? value.tags.filter((item) => item !== tag) : [...value.tags, tag] })
+
+  const toggleAward = () => setValue(value.award_type ? {
+    ...value,
+    award_type: null,
+    award_title: null,
+    award_rank: null,
+  } : {
+    ...value,
+    award_type: 'winner',
+    award_title: 'ชนะเลิศ',
+    award_rank: 1,
+  })
+
+  const selectAwardType = (option: typeof awardOptions[number]) => setValue({
+    ...value,
+    award_type: option.value,
+    award_title: option.title,
+    award_rank: option.rank,
+  })
 
   const moveImage = (index: number, offset: number) => {
     const nextIndex = index + offset
@@ -470,6 +526,25 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
             return <label className={`editor-tag tag-${meta.tone} ${checked ? 'checked' : ''}`} key={tag}><input type="checkbox" checked={checked} onChange={() => toggleEditorTag(tag)} /><i>{checked ? '✓' : ''}</i><span><Icon size={14} aria-hidden="true" />{tag}</span></label>
           })}</div>
         </fieldset>
+
+        <section className="editor-section award-editor-section">
+          <div className="editor-section-title"><Trophy size={15} /><span>รางวัล / ผลการแข่งขัน</span></div>
+          <label className={`award-toggle ${value.award_type ? 'checked' : ''}`}>
+            <input type="checkbox" checked={Boolean(value.award_type)} onChange={toggleAward} />
+            <i>{value.award_type ? '✓' : ''}</i>
+            <span><b>มีรางวัลหรืออันดับจากการแข่งขัน</b><small>ป้ายจะแสดงบนการ์ดและใช้ช่วยจัดลำดับผลงาน</small></span>
+          </label>
+          {value.award_type && <div className="award-editor-fields">
+            <div className="award-option-grid" role="radiogroup" aria-label="เลือกประเภทรางวัล">
+              {awardOptions.map((option) => <button type="button" role="radio" aria-checked={value.award_type === option.value} className={value.award_type === option.value ? 'active' : ''} onClick={() => selectAwardType(option)} key={option.value}>{option.label}</button>)}
+            </div>
+            <div className="award-detail-fields">
+              <label>ข้อความที่แสดง<input required maxLength={100} value={value.award_title || ''} onChange={(event) => setValue({ ...value, award_title: event.target.value })} placeholder="เช่น เหรียญทองแดง" /></label>
+              <label>อันดับที่<input type="number" min={1} max={999} value={value.award_rank || ''} onChange={(event) => setValue({ ...value, award_rank: event.target.value ? Number(event.target.value) : null })} placeholder="ไม่ระบุก็ได้" /></label>
+            </div>
+            <div className="award-preview"><span>ตัวอย่างป้าย</span><AwardBadge project={{ ...(project || { id: 0, created_at: '', updated_at: '' }), ...value } as Project} large /></div>
+          </div>}
+        </section>
 
         <section className="editor-section">
           <div className="editor-section-title"><Link2 size={15} /><span>ลิงก์โปรเจกต์</span></div>

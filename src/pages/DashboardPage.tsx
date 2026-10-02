@@ -20,6 +20,7 @@ import { createPortal } from 'react-dom'
 import { PageHeader } from '../components/PageHeader'
 import { useAuth } from '../context/AuthContext'
 import { projectImageUrl, supabase } from '../lib/supabase'
+import { sortProjectsByImportance } from '../lib/projectRanking'
 import type { AdminActivity, ContactMessage, Profile, Project, UserRole } from '../types'
 import { ProjectEditor, ProjectModal } from './ProjectsPage'
 import './DashboardPage.css'
@@ -62,7 +63,7 @@ export function DashboardPage() {
       supabase.from('contact_messages').select('*').order('created_at', { ascending: false }).limit(100),
       supabase.from('admin_activity').select('*').order('created_at', { ascending: false }).limit(100),
     ])
-    setProjects((projectResult.data as Project[]) || [])
+    setProjects(sortProjectsByImportance((projectResult.data as Project[]) || []))
     setProfiles((profileResult.data as Profile[]) || [])
     setMessages((messageResult.data as ContactMessage[]) || [])
     setActivity((activityResult.data as AdminActivity[]) || [])
@@ -81,7 +82,7 @@ export function DashboardPage() {
   }, [selectedProject, editor, selectedMessage, selectedProfile])
 
   const normalizedQuery = query.trim().toLocaleLowerCase('th')
-  const visibleProjects = useMemo(() => projects.filter((project) => `${project.name} ${project.description} ${(project.tags || []).join(' ')}`.toLocaleLowerCase('th').includes(normalizedQuery)), [projects, normalizedQuery])
+  const visibleProjects = useMemo(() => projects.filter((project) => `${project.name} ${project.description} ${project.award_title || ''} ${(project.tags || []).join(' ')}`.toLocaleLowerCase('th').includes(normalizedQuery)), [projects, normalizedQuery])
   const visibleMessages = useMemo(() => messages.filter((message) => `${message.subject} ${message.name} ${message.email} ${message.message}`.toLocaleLowerCase('th').includes(normalizedQuery)), [messages, normalizedQuery])
   const visibleProfiles = useMemo(() => profiles.filter((profile) => `${profile.username} ${profile.id} ${profile.role}`.toLocaleLowerCase('th').includes(normalizedQuery)), [profiles, normalizedQuery])
 
