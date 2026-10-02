@@ -12,6 +12,10 @@ Portfolio ของ Wutthipat “Zumo” Sriyangnok เขียนใหม่�
 - อัปโหลดรูปโปรเจกต์สูงสุด 5 รูปไปยัง Supabase Storage
 - แปลงรูป JPG/PNG/WebP เป็น WebP คุณภาพ 82% และย่อด้านยาวไม่เกิน 1920px ก่อนอัปโหลด
 - ค้นหาและกรองโปรเจกต์ตาม Tag
+- ลิงก์ตรงสำหรับแชร์แต่ละโปรเจกต์ เช่น `/projects/microfiber-filter-esp32`
+- SEO, canonical URL, sitemap และ Open Graph/Twitter Card สำหรับภาพตัวอย่างบน LINE, Facebook และ Discord
+- ฟอร์ม Contact ป้องกันสแปมด้วย honeypot, ตรวจเวลาการกรอก และจำกัด 3 ข้อความต่อ IP ใน 15 นาที
+- แจ้งเตือนข้อความใหม่พร้อมจำนวนข้อความที่ยังไม่อ่านให้แอดมินแบบเรียลไทม์
 - Admin Dashboard สำหรับดู เพิ่ม แก้ไข และลบโปรเจกต์ จัดการข้อความ ตรวจข้อมูลผู้ใช้ และดู Audit Log
 - Row Level Security และ Admin RPC ตรวจสิทธิ์ซ้ำที่ PostgreSQL ก่อนแก้ไขหรือลบข้อมูล
 - Security headers บน Vercel รวม CSP, HSTS, anti-frame และ browser permissions policy
@@ -31,10 +35,13 @@ npm run dev
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+CONTACT_RATE_LIMIT_SECRET=use-a-long-random-secret
 POSTGRES_URL=postgresql://postgres.project-ref:password@pooler-host:5432/postgres?sslmode=require
 ```
 
-`POSTGRES_URL` ใช้เฉพาะสคริปต์สร้างฐานข้อมูลและจะไม่ถูกส่งไปยัง browser ส่วนเว็บใช้เฉพาะ URL และ anon key ซึ่งความปลอดภัยถูกควบคุมด้วย RLS ใน `supabase/schema.sql`
+`SUPABASE_SERVICE_ROLE_KEY` และ `CONTACT_RATE_LIMIT_SECRET` ใช้เฉพาะ Vercel Function ที่ `/api/contact` และห้ามขึ้นต้นชื่อด้วย `VITE_` เพราะต้องไม่ถูกส่งไปยัง browser ส่วน `POSTGRES_URL` ใช้เฉพาะสคริปต์สร้างฐานข้อมูล เว็บฝั่งผู้ชมใช้ URL และ anon key ซึ่งความปลอดภัยถูกควบคุมด้วย RLS ใน `supabase/schema.sql`
 
 บัญชีที่สมัครใหม่จะได้รับ role `user` เสมอ เพื่อป้องกันผู้สมัครรายแรกยึดสิทธิ์แอดมิน การตั้งแอดมินครั้งแรกให้ทำผ่าน Supabase SQL Editor ด้วยบัญชีเจ้าของโปรเจกต์:
 
@@ -58,6 +65,9 @@ Import repository นี้เข้า Vercel แล้ว Vercel จะตร�
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_SITE_URL` ตั้งเป็น `https://webportfoliozumo.vercel.app`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `CONTACT_RATE_LIMIT_SECRET` เป็นข้อความสุ่มยาวอย่างน้อย 32 ตัวอักษร
 
 Build command คือ `npm run build` และ output directory คือ `dist` เมื่อ Vercel เชื่อมกับ GitHub แล้ว ทุก push เข้า `main` จะ deploy อัตโนมัติ
 

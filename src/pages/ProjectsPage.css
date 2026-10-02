@@ -475,6 +475,24 @@
 
 .modal-toolbar-actions .project-links { display: flex; }
 .modal-toolbar-actions .project-links a { width: 38px; height: 38px; }
+.project-share-button {
+  min-width: 44px;
+  height: 38px;
+  padding: 0 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgba(168, 85, 247, .28);
+  border-radius: 11px;
+  background: rgba(168, 85, 247, .09);
+  color: #d8b4fe;
+  cursor: pointer;
+  transition: .18s;
+}
+.project-share-button:hover { border-color: rgba(168, 85, 247, .55); background: rgba(168, 85, 247, .17); }
+.project-share-button.copied { border-color: rgba(52, 211, 153, .38); color: #6ee7b7; background: rgba(52, 211, 153, .08); }
+.project-share-button span { color: inherit; font: 600 .66rem 'Noto Sans Thai'; letter-spacing: 0; }
 
 .projects-page .modal-close {
   position: static;
@@ -836,6 +854,19 @@
 .award-preview .project-award { margin: 0; }
 
 .editor-links { display: grid; gap: 9px; }
+.project-slug-input {
+  display: flex;
+  align-items: center;
+  margin-top: 7px;
+  border: 1px solid rgba(168, 85, 247, .17);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .035);
+  overflow: hidden;
+}
+.project-slug-input:focus-within { border-color: rgba(168, 85, 247, .65); box-shadow: 0 0 0 3px rgba(168, 85, 247, .09); }
+.project-slug-input > span { padding: 0 0 0 13px; color: #766e83; font: .7rem 'Share Tech Mono'; white-space: nowrap; }
+.projects-page .project-slug-input input { margin: 0; border: 0; background: transparent; box-shadow: none; }
+.field-help { display: block; margin-top: 6px; color: #71697e; font-size: .65rem; }
 .editor-links label { margin: 0; position: relative; }
 .editor-links label > span {
   display: inline-flex;
@@ -1039,6 +1070,8 @@
   .projects-page .project-modal { width: 100%; height: 88dvh; max-height: 88dvh; border-radius: 22px 22px 0 0; border-bottom: 0; }
   .projects-page .editor-modal { width: 100%; height: 94dvh; max-height: 94dvh; border-radius: 22px 22px 0 0; border-bottom: 0; }
   .modal-toolbar { min-height: 66px; padding: 10px 12px 10px 17px; }
+  .project-share-button span { display: none; }
+  .project-share-button { width: 40px; min-width: 40px; padding: 0; }
   .projects-page .modal-close { width: 42px; height: 42px; }
   .projects-page .modal-image { height: min(35vh, 300px); }
   .gallery-arrow { width: 40px; height: 40px; }

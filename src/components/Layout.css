@@ -1,0 +1,47 @@
+.admin-dashboard-link { position: relative; }
+.admin-unread-badge {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #090511;
+  border-radius: 999px;
+  background: #ec4899;
+  color: white;
+  font: 700 .58rem 'Share Tech Mono';
+  box-shadow: 0 0 12px rgba(236, 72, 153, .55);
+}
+.mobile-admin-status { display: inline-flex; align-items: center; gap: 8px; }
+.mobile-admin-status b { min-width: 23px; height: 23px; display: grid; place-items: center; border-radius: 999px; background: #ec4899; color: white; font-size: .68rem; }
+.admin-message-toast {
+  position: fixed;
+  z-index: 150;
+  right: 22px;
+  bottom: 22px;
+  width: min(360px, calc(100vw - 28px));
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid rgba(236, 72, 153, .35);
+  border-radius: 16px;
+  background: rgba(14, 9, 27, .96);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, .45), 0 0 26px rgba(236, 72, 153, .12);
+  backdrop-filter: blur(18px);
+  animation: admin-toast-in .35s cubic-bezier(.2, .8, .2, 1);
+}
+.admin-message-toast > svg { color: #f472b6; }
+.admin-message-toast a { min-width: 0; display: flex; flex-direction: column; text-decoration: none; }
+.admin-message-toast a span { color: #f9a8d4; font-size: .7rem; }
+.admin-message-toast a b, .admin-message-toast a small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-message-toast a b { margin-top: 2px; color: #f3f0fa; font-size: .84rem; }
+.admin-message-toast a small { color: #8f879d; }
+.admin-message-toast button { width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 9px; background: rgba(255, 255, 255, .05); color: #948b9f; cursor: pointer; }
+@keyframes admin-toast-in { from { opacity: 0; transform: translateY(16px) scale(.97); } }
+@media (max-width: 620px) { .admin-message-toast { right: 14px; bottom: 14px; } }
+@media (prefers-reduced-motion: reduce) { .admin-message-toast { animation: none; } }

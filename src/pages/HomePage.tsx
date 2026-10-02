@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { Seo } from '../components/Seo'
 import { techStack } from '../data'
 import { assetUrl } from '../lib/supabase'
 import './HomePage.css'
@@ -74,6 +75,7 @@ const techIcons: Record<string, LucideIcon> = {
 export function HomePage() {
   return (
     <>
+      <Seo title="Wutthipat Sriyangnok — Creative Developer Portfolio" description="แฟ้มสะสมผลงานของ Wutthipat Sriyangnok นักเรียนมัธยมศึกษาปีที่ 6 รวมผลงาน IoT, AI, Robotics, Game Development และ Web Development" path="/" />
       <section className="hero section-pad home-hero">
         <div className="hero-copy reveal">
           <div className="eyebrow"><span className="online-dot" /> PORTFOLIO · ZUMO DEV · {new Date().getFullYear()}</div>

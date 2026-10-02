@@ -26,6 +26,7 @@ export const techStack = [
 export const fallbackProjects: Project[] = [
   {
     id: -1,
+    slug: 'smart-farm-iot-system',
     name: 'Smart Farm IoT System',
     description: 'ระบบรดน้ำต้นไม้อัตโนมัติ ใช้ Sensor วัดความชื้นร่วมกับ ESP32 และแสดงผลแบบ Real-time บน Blynk',
     images: ['/assets/bg_bridge.png'],
@@ -39,6 +40,7 @@ export const fallbackProjects: Project[] = [
   },
   {
     id: -2,
+    slug: 'ai-object-detection',
     name: 'AI Object Detection',
     description: 'ฝึกโมเดลตรวจจับวัตถุด้วย Python, OpenCV และชุดข้อมูลที่สร้างขึ้นเอง',
     images: ['/assets/Python-logo-notext.svg.png'],

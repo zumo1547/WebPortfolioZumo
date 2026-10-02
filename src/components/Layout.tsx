@@ -1,8 +1,10 @@
-import { Github, LayoutDashboard, LogIn, LogOut, Menu, Settings, X, Zap } from 'lucide-react'
+import { Bell, Github, LayoutDashboard, LogIn, LogOut, Menu, Settings, X, Zap } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { assetUrl } from '../lib/supabase'
+import { assetUrl, supabase } from '../lib/supabase'
+import type { ContactMessage } from '../types'
+import './Layout.css'
 
 const links = [
   { to: '/', label: 'Home' },
@@ -13,6 +15,8 @@ const links = [
 
 export function Layout({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [unreadMessages, setUnreadMessages] = useState(0)
+  const [newMessage, setNewMessage] = useState<ContactMessage | null>(null)
   const { user, profile, isAdmin, signOut } = useAuth()
   const location = useLocation()
 
@@ -24,6 +28,36 @@ export function Layout({ children }: { children: ReactNode }) {
   }, [menuOpen])
 
   useEffect(() => { setMenuOpen(false) }, [location.pathname])
+
+  useEffect(() => {
+    if (!isAdmin) {
+      setUnreadMessages(0)
+      setNewMessage(null)
+      return
+    }
+
+    const refreshUnread = async () => {
+      const { count } = await supabase.from('contact_messages').select('id', { count: 'exact', head: true }).eq('read', false)
+      setUnreadMessages(count || 0)
+    }
+    void refreshUnread()
+
+    const channel = supabase
+      .channel('admin-contact-notifications')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, (payload) => {
+        void refreshUnread()
+        if (payload.eventType === 'INSERT') setNewMessage(payload.new as ContactMessage)
+      })
+      .subscribe()
+
+    return () => { void supabase.removeChannel(channel) }
+  }, [isAdmin])
+
+  useEffect(() => {
+    if (!newMessage) return
+    const timer = window.setTimeout(() => setNewMessage(null), 7000)
+    return () => window.clearTimeout(timer)
+  }, [newMessage])
 
   return (
     <div className="app-shell">
@@ -48,7 +82,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   <span>{(profile?.username || user.email || 'U').slice(0, 1).toUpperCase()}</span>
                   <b>{profile?.username || user.email?.split('@')[0]}</b>
                 </Link>
-                {isAdmin && <Link className="icon-button admin" to="/dashboard" aria-label="Dashboard"><LayoutDashboard size={18} /></Link>}
+                {isAdmin && <Link className="icon-button admin admin-dashboard-link" to="/dashboard" aria-label={`Dashboard${unreadMessages ? ` มีข้อความใหม่ ${unreadMessages} ข้อความ` : ''}`}><LayoutDashboard size={18} />{unreadMessages > 0 && <span className="admin-unread-badge">{unreadMessages > 99 ? '99+' : unreadMessages}</span>}</Link>}
                 <Link className="icon-button" to="/settings" aria-label="Settings"><Settings size={18} /></Link>
                 <button className="icon-button danger" onClick={() => void signOut()} aria-label="Logout"><LogOut size={18} /></button>
               </>
@@ -69,13 +103,18 @@ export function Layout({ children }: { children: ReactNode }) {
           ))}
           {user ? (
             <>
-              {isAdmin && <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard <LayoutDashboard size={18} /></Link>}
+              {isAdmin && <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard <span className="mobile-admin-status"><LayoutDashboard size={18} />{unreadMessages > 0 && <b>{unreadMessages}</b>}</span></Link>}
               <Link to="/settings" onClick={() => setMenuOpen(false)}>Settings <Settings size={18} /></Link>
               <button onClick={() => { void signOut(); setMenuOpen(false) }}>ออกจากระบบ <LogOut size={18} /></button>
             </>
           ) : <Link to="/login" onClick={() => setMenuOpen(false)}>เข้าสู่ระบบ <LogIn size={18} /></Link>}
         </div>
       )}
+      {isAdmin && newMessage && <aside className="admin-message-toast" role="status" aria-live="polite">
+        <Bell size={19} />
+        <Link to="/dashboard" onClick={() => setNewMessage(null)}><span>มีข้อความใหม่จากหน้า Contact</span><b>{newMessage.name}</b><small>{newMessage.subject}</small></Link>
+        <button type="button" onClick={() => setNewMessage(null)} aria-label="ปิดการแจ้งเตือน"><X size={16} /></button>
+      </aside>}
       <main key={location.pathname}>{children}</main>
       <footer className="site-footer">
         <div><Zap size={15} /> ZUMO DEV PORTFOLIO</div>

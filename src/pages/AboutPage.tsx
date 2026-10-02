@@ -16,6 +16,7 @@ import {
   UsersRound,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
+import { Seo } from '../components/Seo'
 import { assetUrl } from '../lib/supabase'
 import './AboutPage.css'
 
@@ -86,6 +87,7 @@ const portfolioWorkflow = [
 export function AboutPage() {
   return (
     <section className="content-section page-section about-page">
+      <Seo title="About — Wutthipat Sriyangnok" description="รู้จัก Wutthipat Sriyangnok นักเรียนมัธยมศึกษาปีที่ 6 พร้อมเส้นทางการเรียนรู้ รางวัล และเครื่องมือที่ใช้สร้างผลงาน" path="/about" />
       <PageHeader eyebrow="PROFILE DATABASE" title="ABOUT" accent="ME">สิ่งที่ผมสนใจ ผลงานที่เคยทำ และเครื่องมือที่ใช้พัฒนาแต่ละโปรเจกต์</PageHeader>
 
       <div className="about-signal-strip reveal" aria-label="ข้อมูลปัจจุบัน">

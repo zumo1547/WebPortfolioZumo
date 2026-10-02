@@ -17,6 +17,7 @@ export type AwardType = 'winner' | 'runner_up_1' | 'runner_up_2' | 'gold' | 'sil
 
 export interface Project {
   id: number
+  slug: string | null
   name: string
   description: string
   images: string[]
@@ -30,6 +31,7 @@ export interface Project {
 }
 
 export interface ProjectInput {
+  slug: string
   name: string
   description: string
   tags: string[]

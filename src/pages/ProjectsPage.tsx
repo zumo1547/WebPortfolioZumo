@@ -2,6 +2,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowDownWideNarrow,
+  Check,
   ExternalLink,
   Github,
   Globe2,
@@ -14,6 +15,7 @@ import {
   Play,
   Plus,
   Search,
+  Share2,
   School,
   Tag,
   Target,
@@ -26,7 +28,9 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
+import { Seo } from '../components/Seo'
 import { useAuth } from '../context/AuthContext'
 import { fallbackProjects, projectTags } from '../data'
 import { MAX_PROJECT_IMAGE_BYTES, optimizeProjectImage, PROJECT_IMAGE_ACCEPT } from '../lib/imageOptimization'
@@ -35,7 +39,17 @@ import { projectImageUrl, supabase } from '../lib/supabase'
 import type { AwardType, Project, ProjectInput, ProjectLinks } from '../types'
 import './ProjectsPage.css'
 
-const emptyInput: ProjectInput = { name: '', description: '', images: [], tags: ['งานในโรงเรียน'], links: {}, award_type: null, award_title: null, award_rank: null }
+const emptyInput: ProjectInput = { slug: '', name: '', description: '', images: [], tags: ['งานในโรงเรียน'], links: {}, award_type: null, award_title: null, award_rank: null }
+
+const normalizeSlug = (value: string) => value
+  .trim()
+  .toLowerCase()
+  .normalize('NFKD')
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '')
+  .slice(0, 80)
+
+const projectSlug = (project: Project) => project.slug || `project-${project.id}`
 
 const awardOptions: Array<{ value: AwardType; label: string; title: string; rank: number | null }> = [
   { value: 'winner', label: 'ชนะเลิศ', title: 'ชนะเลิศ', rank: 1 },
@@ -119,6 +133,8 @@ function LinkButtons({ links, compact = false, onClick }: { links: ProjectLinks;
 
 export function ProjectsPage() {
   const { user, isAdmin } = useAuth()
+  const navigate = useNavigate()
+  const { slug } = useParams<{ slug?: string }>()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
@@ -137,6 +153,15 @@ export function ProjectsPage() {
   useEffect(() => { void loadProjects() }, [])
 
   useEffect(() => {
+    if (!slug) {
+      setSelected(null)
+      return
+    }
+    const matchedProject = projects.find((project) => projectSlug(project) === slug)
+    setSelected(matchedProject || null)
+  }, [projects, slug])
+
+  useEffect(() => {
     if (!selected && !editing && !deleting) return
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -144,14 +169,17 @@ export function ProjectsPage() {
       if (event.key !== 'Escape') return
       if (editing) setEditing(null)
       else if (deleting) setDeleting(null)
-      else setSelected(null)
+      else {
+        setSelected(null)
+        void navigate('/projects')
+      }
     }
     document.addEventListener('keydown', closeOnEscape)
     return () => {
       document.body.style.overflow = previousOverflow
       document.removeEventListener('keydown', closeOnEscape)
     }
-  }, [selected, editing, deleting])
+  }, [selected, editing, deleting, navigate])
 
   const normalizedQuery = query.trim().toLocaleLowerCase('th')
   const visible = useMemo(() => projects.filter((project) => {
@@ -163,9 +191,19 @@ export function ProjectsPage() {
 
   const toggleTag = (tag: string) => setActiveTags((current) => current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag])
   const clearFilters = () => { setQuery(''); setActiveTags([]) }
+  const closeSelected = () => { setSelected(null); void navigate('/projects') }
+  const selectedPath = selected ? `/projects/${projectSlug(selected)}` : '/projects'
+  const selectedDescription = selected ? stripDescriptionFormatting(selected.description).replace(/\s+/g, ' ').slice(0, 155) : 'รวมผลงาน Game, IoT, Robotics, AI และ Web Development ของ Wutthipat Sriyangnok'
 
   return (
     <section className="content-section page-section projects-page">
+      <Seo
+        title={selected ? `${selected.name.trim()} — Wutthipat Sriyangnok` : 'Projects — Wutthipat Sriyangnok'}
+        description={selectedDescription}
+        path={selectedPath}
+        image={selected?.images?.[0] ? projectImageUrl(selected.images[0]) : '/assets/og-portfolio.png'}
+        type={selected ? 'article' : 'website'}
+      />
       <PageHeader eyebrow="PROJECT ARCHIVE" title="MY" accent="PROJECTS">ผลงานด้าน Game, IoT, Robotics, AI และ Web Development</PageHeader>
 
       <div className="project-controls reveal">
@@ -198,7 +236,7 @@ export function ProjectsPage() {
       </div> : <div className="project-grid">
         {visible.map((project, index) => (
           <article className="project-card reveal" style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }} key={project.id}>
-            <button className="project-card-open" onClick={() => setSelected(project)} aria-label={`เปิดรายละเอียด ${project.name}`}>
+            <button className="project-card-open" onClick={() => void navigate(`/projects/${projectSlug(project)}`)} aria-label={`เปิดรายละเอียด ${project.name}`}>
               <div className="project-cover">
                 <img src={projectImageUrl(project.images?.[0])} alt={project.name} loading="lazy" />
                 <span className="project-cover-shade" />
@@ -221,7 +259,7 @@ export function ProjectsPage() {
 
       {!loading && !visible.length && <div className="empty-state"><Search size={32} /><h2>ไม่พบโปรเจกต์ที่ค้นหา</h2><p>ลองเปลี่ยนคำค้นหาหรือเลือกแท็กอื่น</p><button className="button secondary small" onClick={clearFilters}>ล้างตัวกรอง</button></div>}
 
-      {selected && createPortal(<div className="projects-page modal-portal"><ProjectModal project={selected} onClose={() => setSelected(null)} /></div>, document.body)}
+      {selected && createPortal(<div className="projects-page modal-portal"><ProjectModal project={selected} onClose={closeSelected} /></div>, document.body)}
       {editing && isAdmin && user && createPortal(<div className="projects-page modal-portal"><ProjectEditor project={editing === 'new' ? null : editing} userId={user.id} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); void loadProjects() }} /></div>, document.body)}
       {deleting && isAdmin && user && createPortal(<div className="projects-page modal-portal"><ProjectEditor project={deleting} userId={user.id} initialDeleteArmed onClose={() => setDeleting(null)} onSaved={() => { setDeleting(null); void loadProjects() }} /></div>, document.body)}
     </section>
@@ -233,11 +271,31 @@ export function ProjectModal({ project, onClose }: { project: Project; onClose: 
   const [autoPaused, setAutoPaused] = useState(false)
   const [hoverPaused, setHoverPaused] = useState(false)
   const [autoProgress, setAutoProgress] = useState(0)
+  const [linkCopied, setLinkCopied] = useState(false)
   const elapsedRef = useRef(0)
   const lastFrameRef = useRef<number | null>(null)
   const lastProgressUpdateRef = useRef(0)
   const images = project.images?.length ? project.images : ['/assets/Icon portfolio.png']
   const galleryPaused = autoPaused || hoverPaused
+
+  const shareProject = async () => {
+    const shareData = { title: project.name, text: stripDescriptionFormatting(project.description).slice(0, 140), url: window.location.href }
+    try {
+      if (navigator.share) await navigator.share(shareData)
+      else {
+        await navigator.clipboard.writeText(window.location.href)
+        setLinkCopied(true)
+        window.setTimeout(() => setLinkCopied(false), 2200)
+      }
+    } catch (caught) {
+      if (caught instanceof DOMException && caught.name === 'AbortError') return
+      try {
+        await navigator.clipboard.writeText(window.location.href)
+        setLinkCopied(true)
+        window.setTimeout(() => setLinkCopied(false), 2200)
+      } catch { /* Clipboard can be unavailable in an insecure preview. */ }
+    }
+  }
 
   const selectImage = (offset: number) => {
     setAutoPaused(true)
@@ -305,6 +363,7 @@ export function ProjectModal({ project, onClose }: { project: Project; onClose: 
         <div><span>PROJECT DETAILS</span><strong>รายละเอียดผลงาน</strong></div>
         <div className="modal-toolbar-actions">
           <LinkButtons compact links={project.links || {}} />
+          <button className={`project-share-button ${linkCopied ? 'copied' : ''}`} type="button" onClick={() => void shareProject()} aria-label="แชร์ลิงก์โปรเจกต์" title="แชร์ลิงก์โปรเจกต์">{linkCopied ? <Check size={18} /> : <Share2 size={18} />}<span>{linkCopied ? 'คัดลอกแล้ว' : 'แชร์'}</span></button>
           <button className="modal-close" onClick={onClose} aria-label="ปิดรายละเอียดโปรเจกต์"><X /></button>
         </div>
       </header>
@@ -355,6 +414,7 @@ export function ProjectModal({ project, onClose }: { project: Project; onClose: 
 
 export function ProjectEditor({ project, userId, onClose, onSaved, initialDeleteArmed = false }: { project: Project | null; userId: string; onClose: () => void; onSaved: () => void; initialDeleteArmed?: boolean }) {
   const [value, setValue] = useState<ProjectInput>(project ? {
+    slug: project.slug || `project-${project.id}`,
     name: project.name,
     description: project.description,
     tags: project.tags || [],
@@ -377,6 +437,8 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
     try {
       if (!value.tags.length) throw new Error('กรุณาเลือก Tag อย่างน้อย 1 รายการ')
       if (value.images.length + files.length > 5) throw new Error('รูปภาพรวมกันได้สูงสุด 5 รูป')
+      const cleanSlug = normalizeSlug(value.slug)
+      if (!cleanSlug) throw new Error('กรุณากำหนดลิงก์โปรเจกต์เป็นภาษาอังกฤษ เช่น microfiber-filter')
 
       for (const [index, file] of files.entries()) {
         setSavingStatus(`กำลังแปลงรูป ${index + 1}/${files.length} เป็น WebP...`)
@@ -394,7 +456,7 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
 
       setSavingStatus('กำลังบันทึกข้อมูลโปรเจกต์...')
       const cleanLinks = Object.fromEntries(Object.entries(value.links).filter(([, link]) => safeExternalUrl(link))) as ProjectLinks
-      const payload = { ...value, links: cleanLinks, images: [...value.images, ...uploaded], updated_at: new Date().toISOString() }
+      const payload = { ...value, slug: cleanSlug, links: cleanLinks, images: [...value.images, ...uploaded], updated_at: new Date().toISOString() }
       const result = project
         ? await supabase.from('projects').update(payload).eq('id', project.id).select('id').maybeSingle()
         : await supabase.from('projects').insert(payload).select('id').maybeSingle()
@@ -502,7 +564,8 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
       <div className="editor-modal-scroll">
         <section className="editor-section">
           <div className="editor-section-title"><Pencil size={15} /><span>ข้อมูลโปรเจกต์</span></div>
-          <label>ชื่อโปรเจกต์<input required maxLength={150} value={value.name} onChange={(event) => setValue({ ...value, name: event.target.value })} placeholder="ชื่อผลงานหรือกิจกรรม" /></label>
+          <label>ชื่อโปรเจกต์<input required maxLength={150} value={value.name} onChange={(event) => setValue({ ...value, name: event.target.value, slug: project || value.slug ? value.slug : normalizeSlug(event.target.value) })} placeholder="ชื่อผลงานหรือกิจกรรม" /></label>
+          <label>ลิงก์ตรงของโปรเจกต์<div className="project-slug-input"><span>/projects/</span><input required maxLength={80} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={value.slug} onChange={(event) => setValue({ ...value, slug: normalizeSlug(event.target.value) })} placeholder="microfiber-filter" /></div><small className="field-help">ใช้ตัวอักษรอังกฤษ ตัวเลข และขีดกลาง เพื่อแชร์ผลงานชิ้นนี้โดยตรง</small></label>
           <div className="editor-description-field">
             <label htmlFor="project-description">คำอธิบาย</label>
             <div className="description-toolbar" aria-label="จัดรูปแบบคำอธิบาย">
