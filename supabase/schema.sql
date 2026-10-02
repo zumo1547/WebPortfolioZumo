@@ -202,7 +202,7 @@ as $$
 declare
   message_id bigint;
 begin
-  if coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role' then
+  if coalesce(auth.role(), '') <> 'service_role' then
     raise exception 'Service role required' using errcode = '42501';
   end if;
   if char_length(trim(sender_name)) not between 1 and 80
