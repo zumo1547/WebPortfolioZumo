@@ -706,21 +706,82 @@
   background: #07050d;
 }
 .existing-image img { width: 100%; height: 100%; object-fit: cover; }
-.existing-image button {
+.image-position {
   position: absolute;
-  top: 4px;
+  top: 5px;
+  left: 5px;
+  padding: 3px 6px;
+  border: 1px solid rgba(255, 255, 255, .17);
+  border-radius: 6px;
+  background: rgba(7, 5, 15, .86);
+  color: #e9d5ff;
+  font: 600 .53rem 'Share Tech Mono';
+}
+.image-order-actions {
+  position: absolute;
   right: 4px;
+  bottom: 4px;
+  display: flex;
+  gap: 3px;
+}
+.image-order-actions button {
   width: 25px;
   height: 25px;
   display: grid;
   place-items: center;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, .24);
-  border-radius: 50%;
-  background: rgba(220, 38, 38, .9);
+  border-radius: 7px;
+  background: rgba(7, 5, 15, .9);
   color: white;
   cursor: pointer;
 }
+.image-order-actions button:hover:not(:disabled) { border-color: rgba(192, 132, 252, .7); color: #d8b4fe; }
+.image-order-actions button:disabled { opacity: .3; cursor: not-allowed; }
+.image-order-actions .remove-image { background: rgba(185, 28, 28, .92); }
+.image-order-actions svg { position: static; background: transparent; }
+
+.editor-description-field > label { display: block; }
+.description-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 7px;
+  padding: 7px 9px;
+  border: 1px solid rgba(148, 163, 184, .15);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: rgba(17, 12, 31, .9);
+}
+.description-toolbar > span { color: #746d80; font-size: .62rem; }
+.description-toolbar > div { display: flex; gap: 5px; }
+.description-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid rgba(168, 85, 247, .24);
+  border-radius: 7px;
+  background: rgba(168, 85, 247, .07);
+  color: #cbc3d5;
+  font-size: .68rem;
+  cursor: pointer;
+}
+.description-toolbar button:hover { border-color: rgba(192, 132, 252, .6); background: rgba(168, 85, 247, .14); }
+.description-toolbar button i { font-family: serif; }
+.editor-description-field textarea { margin-top: 0; border-radius: 0 0 10px 10px; }
+.description-preview {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(52, 211, 153, .14);
+  border-radius: 9px;
+  background: rgba(52, 211, 153, .035);
+}
+.description-preview > span { color: #6ee7b7; font: .56rem 'Share Tech Mono'; letter-spacing: .08em; }
+.description-preview p { margin: 6px 0 0; color: #aaa2b7; font-size: .76rem; line-height: 1.65; white-space: normal; }
+.formatted-description strong { color: #f3e8ff; font-weight: 800; }
+.formatted-description em { color: #d8b4fe; font-style: italic; }
 
 .projects-page .upload-drop {
   min-height: 120px;
@@ -741,8 +802,12 @@
 .upload-drop strong { color: #d8b4fe; }
 .upload-drop span { color: #716a7f; font-size: .68rem; }
 .projects-page .upload-drop input { display: none; }
-.selected-files { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
-.selected-files span { padding: 4px 7px; border-radius: 6px; background: rgba(52, 211, 153, .08); color: #6ee7b7; font-size: .65rem; }
+.selected-files { display: grid; gap: 5px; margin-top: 9px; }
+.selected-files > div { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 7px; border-radius: 7px; background: rgba(52, 211, 153, .06); }
+.selected-files span { min-width: 0; overflow: hidden; color: #6ee7b7; font-size: .65rem; text-overflow: ellipsis; white-space: nowrap; }
+.selected-files > div > div { display: flex; flex: none; gap: 3px; }
+.selected-files button { width: 25px; height: 25px; display: grid; place-items: center; padding: 0; border: 1px solid rgba(52, 211, 153, .2); border-radius: 6px; background: rgba(7, 5, 15, .65); color: #a7f3d0; cursor: pointer; }
+.selected-files button:disabled { opacity: .28; cursor: not-allowed; }
 
 .image-processing-status {
   display: flex;

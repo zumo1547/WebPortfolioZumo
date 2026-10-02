@@ -21,7 +21,7 @@ import {
   Youtube,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useEffect, useMemo, useState, type FormEvent, type MouseEvent } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { PageHeader } from '../components/PageHeader'
 import { useAuth } from '../context/AuthContext'
@@ -49,6 +49,24 @@ const safeExternalUrl = (value?: string) => {
   } catch {
     return null
   }
+}
+
+const stripDescriptionFormatting = (text: string) => text
+  .replace(/\*\*([^*\n]+)\*\*/g, '$1')
+  .replace(/\*([^*\n]+)\*/g, '$1')
+
+function FormattedDescription({ text }: { text: string }) {
+  const lines = text.split('\n')
+  const tokenPattern = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*)/g
+
+  return <>{lines.map((line, lineIndex) => <Fragment key={`${lineIndex}-${line}`}>
+    {line.split(tokenPattern).filter(Boolean).map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) return <strong key={index}>{part.slice(2, -2)}</strong>
+      if (part.startsWith('*') && part.endsWith('*')) return <em key={index}>{part.slice(1, -1)}</em>
+      return <Fragment key={index}>{part}</Fragment>
+    })}
+    {lineIndex < lines.length - 1 && <br />}
+  </Fragment>)}</>
 }
 
 function TagBadges({ tags }: { tags: string[] }) {
@@ -161,7 +179,7 @@ export function ProjectsPage() {
               <div className="project-body">
                 <TagBadges tags={project.tags || []} />
                 <h2>{project.name}</h2>
-                <p>{project.description}</p>
+                <p>{stripDescriptionFormatting(project.description)}</p>
               </div>
             </button>
             <div className="project-card-actions">
@@ -229,7 +247,7 @@ export function ProjectModal({ project, onClose }: { project: Project; onClose: 
         <div className="modal-content">
           <TagBadges tags={project.tags || []} />
           <h2 id="project-modal-title">{project.name}</h2>
-          <p>{project.description}</p>
+          <p className="formatted-description"><FormattedDescription text={project.description} /></p>
         </div>
       </div>
     </article>
@@ -243,6 +261,7 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
   const [savingStatus, setSavingStatus] = useState('')
   const [error, setError] = useState('')
   const [deleteArmed, setDeleteArmed] = useState(initialDeleteArmed)
+  const descriptionRef = useRef<HTMLTextAreaElement>(null)
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setSaving(true); setError('')
@@ -301,6 +320,39 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
 
   const toggleEditorTag = (tag: string) => setValue({ ...value, tags: value.tags.includes(tag) ? value.tags.filter((item) => item !== tag) : [...value.tags, tag] })
 
+  const moveImage = (index: number, offset: number) => {
+    const nextIndex = index + offset
+    if (nextIndex < 0 || nextIndex >= value.images.length) return
+    const images = [...value.images]
+    const [movedImage] = images.splice(index, 1)
+    images.splice(nextIndex, 0, movedImage)
+    setValue({ ...value, images })
+  }
+
+  const moveSelectedFile = (index: number, offset: number) => {
+    const nextIndex = index + offset
+    if (nextIndex < 0 || nextIndex >= files.length) return
+    const nextFiles = [...files]
+    const [movedFile] = nextFiles.splice(index, 1)
+    nextFiles.splice(nextIndex, 0, movedFile)
+    setFiles(nextFiles)
+  }
+
+  const formatDescription = (marker: '**' | '*') => {
+    const textarea = descriptionRef.current
+    if (!textarea) return
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selectedText = value.description.slice(start, end) || (marker === '**' ? 'ข้อความตัวหนา' : 'ข้อความตัวเอียง')
+    const formattedText = `${marker}${selectedText}${marker}`
+    const description = `${value.description.slice(0, start)}${formattedText}${value.description.slice(end)}`
+    setValue({ ...value, description })
+    requestAnimationFrame(() => {
+      textarea.focus()
+      textarea.setSelectionRange(start + marker.length, start + marker.length + selectedText.length)
+    })
+  }
+
   const selectFiles = (selectedFiles: FileList | null) => {
     setError('')
     const picked = Array.from(selectedFiles || []).slice(0, 5 - value.images.length)
@@ -324,7 +376,18 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
         <section className="editor-section">
           <div className="editor-section-title"><Pencil size={15} /><span>ข้อมูลโปรเจกต์</span></div>
           <label>ชื่อโปรเจกต์<input required maxLength={150} value={value.name} onChange={(event) => setValue({ ...value, name: event.target.value })} placeholder="ชื่อผลงานหรือกิจกรรม" /></label>
-          <label>คำอธิบาย<textarea required maxLength={3000} rows={5} value={value.description} onChange={(event) => setValue({ ...value, description: event.target.value })} placeholder="เล่าแนวคิด บทบาท เทคโนโลยี และผลลัพธ์ของโปรเจกต์" /></label>
+          <div className="editor-description-field">
+            <label htmlFor="project-description">คำอธิบาย</label>
+            <div className="description-toolbar" aria-label="จัดรูปแบบคำอธิบาย">
+              <span>เลือกข้อความแล้วกดรูปแบบ</span>
+              <div>
+                <button type="button" onClick={() => formatDescription('**')} aria-label="ทำข้อความเป็นตัวหนา"><b>B</b> ตัวหนา</button>
+                <button type="button" onClick={() => formatDescription('*')} aria-label="ทำข้อความเป็นตัวเอียง"><i>I</i> ตัวเอียง</button>
+              </div>
+            </div>
+            <textarea id="project-description" ref={descriptionRef} required maxLength={3000} rows={7} value={value.description} onChange={(event) => setValue({ ...value, description: event.target.value })} placeholder="เขียนรายละเอียดของโปรเจกต์ แล้วเลือกข้อความเพื่อทำตัวหนาหรือตัวเอียง" />
+            {!!value.description && <div className="description-preview"><span>ตัวอย่างที่จะแสดง</span><p className="formatted-description"><FormattedDescription text={value.description} /></p></div>}
+          </div>
         </section>
 
         <fieldset className="editor-section editor-fieldset">
@@ -348,9 +411,17 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
 
         <section className="editor-section">
           <div className="editor-section-title"><Images size={15} /><span>รูปภาพโปรเจกต์ ({value.images.length + files.length}/5)</span></div>
-          {!!value.images.length && <div className="existing-images">{value.images.map((image, index) => <div className="existing-image" key={`${image}-${index}`}><img src={projectImageUrl(image)} alt={`รูปปัจจุบัน ${index + 1}`} /><button type="button" onClick={() => setValue({ ...value, images: value.images.filter((item) => item !== image) })} aria-label={`นำรูปที่ ${index + 1} ออก`}><X size={14} /></button></div>)}</div>}
+          {!!value.images.length && <div className="existing-images">{value.images.map((image, index) => <div className="existing-image" key={`${image}-${index}`}>
+            <img src={projectImageUrl(image)} alt={`รูปปัจจุบัน ${index + 1}`} />
+            <span className="image-position">{index === 0 ? 'หน้าปก' : `รูป ${index + 1}`}</span>
+            <div className="image-order-actions">
+              <button type="button" onClick={() => moveImage(index, -1)} disabled={index === 0} aria-label={`เลื่อนรูปที่ ${index + 1} ไปทางซ้าย`}><ChevronLeft size={15} /></button>
+              <button type="button" onClick={() => moveImage(index, 1)} disabled={index === value.images.length - 1} aria-label={`เลื่อนรูปที่ ${index + 1} ไปทางขวา`}><ChevronRight size={15} /></button>
+              <button type="button" className="remove-image" onClick={() => setValue({ ...value, images: value.images.filter((_, imageIndex) => imageIndex !== index) })} aria-label={`นำรูปที่ ${index + 1} ออก`}><X size={14} /></button>
+            </div>
+          </div>)}</div>}
           <label className="upload-drop"><ImagePlus /><strong>เลือกรูปภาพเพิ่มเติม</strong><span>ระบบจะแปลงเป็น WebP และย่อไม่เกิน 1920px อัตโนมัติ · สูงสุด 20 MB</span><input type="file" accept={PROJECT_IMAGE_ACCEPT} multiple disabled={value.images.length >= 5 || saving} onChange={(event) => selectFiles(event.target.files)} /></label>
-          {!!files.length && <div className="selected-files">{files.map((file) => <span key={`${file.name}-${file.size}`}>{file.name} → WebP</span>)}</div>}
+          {!!files.length && <div className="selected-files">{files.map((file, index) => <div key={`${file.name}-${file.size}-${index}`}><span>{file.name} → WebP</span><div><button type="button" onClick={() => moveSelectedFile(index, -1)} disabled={index === 0} aria-label={`เลื่อน ${file.name} ไปก่อนหน้า`}><ChevronLeft size={14} /></button><button type="button" onClick={() => moveSelectedFile(index, 1)} disabled={index === files.length - 1} aria-label={`เลื่อน ${file.name} ไปถัดไป`}><ChevronRight size={14} /></button><button type="button" onClick={() => setFiles(files.filter((_, fileIndex) => fileIndex !== index))} aria-label={`นำ ${file.name} ออก`}><X size={13} /></button></div></div>)}</div>}
         </section>
 
         {error && <div className="notice error">{error}</div>}
