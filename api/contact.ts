@@ -101,7 +101,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       response.status(429).json({ error: 'ส่งข้อความบ่อยเกินไป กรุณารอ 15 นาทีแล้วลองใหม่' })
       return
     }
-    response.status(500).json({ error: 'Unable to send message' })
+    response.status(500).json({ error: 'Unable to send message', reference: error.code || 'CONTACT_RPC_FAILED' })
     return
   }
 
