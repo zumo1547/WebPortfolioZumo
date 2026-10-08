@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ArrowRight,
   Atom,
@@ -61,44 +61,6 @@ const appliedSkills = [
   ['React / TypeScript', 'Web · UI · Supabase'],
 ]
 
-const journeySteps = [
-  {
-    icon: Gamepad2,
-    label: 'GAME DEVELOPMENT',
-    title: 'เริ่มจากการสร้างเกม',
-    text: 'ผมเริ่มเขียนระบบใน Roblox Studio ด้วย Lua แล้วลองทำเกมใน Unity ด้วย C# ได้ฝึกแก้โค้ดจากสิ่งที่เล่นและทดสอบเอง',
-    detail: 'Roblox Studio · Unity',
-  },
-  {
-    icon: Cpu,
-    label: 'HARDWARE & IoT',
-    title: 'จากหน้าจอสู่บอร์ดจริง',
-    text: 'ต่อเซนเซอร์กับ ESP32 และ micro:bit ทำระบบ Smart Farm และเครื่องกรองไมโครไฟเบอร์ที่ทดสอบแล้วกรองได้ 91.97%',
-    detail: 'ESP32 · micro:bit · Sensors',
-  },
-  {
-    icon: ScanSearch,
-    label: 'AI & DATA',
-    title: 'ลองให้คอมพิวเตอร์มองเห็น',
-    text: 'ผมใช้ Python, OpenCV และ CiRA CORE ทดลองตรวจจับวัตถุ ฝึกโมเดล และดูว่าข้อมูลที่เก็บมาช่วยแก้โจทย์ได้อย่างไร',
-    detail: 'Python · OpenCV · CiRA CORE',
-  },
-  {
-    icon: Trophy,
-    label: 'COMPETITIONS',
-    title: 'พางานออกไปแข่งขัน',
-    text: 'ผมพาโครงงานไปแข่ง OCOP และ Micro:bit Thailand Challenge ส่วนหนังสั้น “ขยะกำพร้า” ที่ทำกับทีมได้รางวัลชนะเลิศ Science Film Festival 2025',
-    detail: 'โครงงาน · การแข่งขัน · งานทีม',
-  },
-  {
-    icon: Code2,
-    label: 'THIS PORTFOLIO',
-    title: 'เว็บนี้ก็เป็นผลงานอีกชิ้น',
-    text: 'ผมทำหน้าเว็บด้วย React และ TypeScript ใช้ Supabase เก็บข้อมูลกับรูปภาพ เพื่อให้เปิดดูรายละเอียดผลงานแต่ละชิ้นได้บนคอมและโทรศัพท์',
-    detail: 'React · TypeScript · Supabase',
-  },
-]
-
 const techIcons: Record<string, LucideIcon> = {
   atom: Atom,
   boxes: Boxes,
@@ -155,8 +117,6 @@ function ProjectSlideBackdrop() {
 }
 
 export function HomePage() {
-  const journeyRef = useRef<HTMLElement>(null)
-
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>('.home-reveal')
     if (!('IntersectionObserver' in window)) {
@@ -174,33 +134,6 @@ export function HomePage() {
     }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' })
     elements.forEach((element) => observer.observe(element))
     return () => observer.disconnect()
-  }, [])
-
-  useEffect(() => {
-    const journey = journeyRef.current
-    if (!journey) return
-    const track = journey.querySelector<HTMLElement>('.journey-track')
-    if (!track) return
-
-    let frame = 0
-    const updateProgress = () => {
-      frame = 0
-      const bounds = track.getBoundingClientRect()
-      const progress = Math.max(0, Math.min(1, (window.innerHeight * 0.62 - bounds.top) / bounds.height))
-      journey.style.setProperty('--journey-progress', String(progress))
-    }
-    const scheduleUpdate = () => {
-      if (!frame) frame = window.requestAnimationFrame(updateProgress)
-    }
-
-    updateProgress()
-    window.addEventListener('scroll', scheduleUpdate, { passive: true })
-    window.addEventListener('resize', scheduleUpdate)
-    return () => {
-      window.removeEventListener('scroll', scheduleUpdate)
-      window.removeEventListener('resize', scheduleUpdate)
-      if (frame) window.cancelAnimationFrame(frame)
-    }
   }, [])
 
   return (
@@ -239,32 +172,6 @@ export function HomePage() {
       </section>
 
       <div className="marquee"><div>{[...marquee, ...marquee].map((item, i) => <span key={`${item}-${i}`}><i />{item}</span>)}</div></div>
-
-      <section className="home-journey content-section" ref={journeyRef} aria-labelledby="home-journey-title">
-        <header className="journey-heading home-reveal">
-          <span className="mono-label">// MY JOURNEY</span>
-          <h2 id="home-journey-title">จากเกมแรกถึงเว็บที่คุณกำลังดู</h2>
-          <p>ผมค่อย ๆ ลองทำงานหลายแบบ ทุกช่วงได้เรียนรู้จากการลงมือทำจริง</p>
-        </header>
-        <div className="journey-track">
-          <span className="journey-road" aria-hidden="true" />
-          <span className="journey-road-progress" aria-hidden="true" />
-          <ol className="journey-steps">
-            {journeySteps.map(({ icon: Icon, label, title, text, detail }, index) => (
-              <li className={`journey-step home-reveal ${index % 2 ? 'journey-step-right' : 'journey-step-left'}`} key={title}>
-                <span className="journey-marker" aria-hidden="true"><Icon size={19} /></span>
-                <article className="journey-card">
-                  <div className="journey-card-top"><span>0{index + 1} / 0{journeySteps.length}</span><span>{label}</span></div>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                  <small>{detail}</small>
-                </article>
-              </li>
-            ))}
-          </ol>
-        </div>
-        <div className="journey-finish home-reveal"><span>วันนี้ผมยังเรียนรู้และทำโปรเจกต์ใหม่อยู่เรื่อย ๆ</span><ArrowRight size={17} aria-hidden="true" /></div>
-      </section>
 
       <section className="content-section home-impact">
         <header className="home-section-heading home-reveal">
