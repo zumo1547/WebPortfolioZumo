@@ -197,12 +197,10 @@
 .about-vision-heading { margin-bottom: 25px; text-align: center; }
 .about-vision-heading .mono-label { color: #b989e8; }
 .about-vision-heading h2 { margin: 8px 0 0; background: linear-gradient(95deg, #b98bf4, #f078b9 75%); background-clip: text; color: transparent; font: 800 clamp(1.9rem, 4vw, 2.7rem) 'Kanit'; }
-.about-vision-quote { padding: clamp(25px, 4vw, 43px); border: 1px solid rgba(176, 129, 238, .2); border-radius: 24px; background: linear-gradient(130deg, rgba(24, 22, 48, .94), rgba(14, 17, 35, .95)); box-shadow: 0 24px 65px rgba(0, 0, 0, .2); }
-.about-quote-mark { display: block; height: 40px; color: rgba(168, 85, 247, .55); font: 900 4.3rem/1 'Kanit'; }
-.about-vision-quote blockquote { max-width: 870px; margin: 16px 0 16px; color: #e7e1ef; font: 650 clamp(1.15rem, 2.25vw, 1.55rem)/1.6 'Kanit'; text-wrap: pretty; }
-.about-vision-quote blockquote strong { color: #e38deb; font-weight: 800; }
-.about-vision-quote > p { display: flex; align-items: center; gap: 12px; margin: 0; color: #938ba4; font-size: .75rem; }
-.about-vision-quote > p::before { content: ''; width: 32px; height: 2px; background: linear-gradient(90deg, #a855f7, #ec4899); }
+.about-vision-intro { display: grid; grid-template-columns: 1.1fr .9fr; align-items: end; gap: clamp(22px, 5vw, 65px); padding: clamp(26px, 4vw, 44px); border: 1px solid rgba(176, 129, 238, .2); border-radius: 24px; background: radial-gradient(circle at 5% 0, rgba(168, 85, 247, .14), transparent 42%), linear-gradient(130deg, rgba(24, 22, 48, .94), rgba(14, 17, 35, .95)); box-shadow: 0 24px 65px rgba(0, 0, 0, .2); }
+.about-vision-kicker { display: inline-flex; padding: 6px 11px; border: 1px solid rgba(192, 132, 252, .3); border-radius: 999px; background: rgba(168, 85, 247, .1); color: #d8b4fe; font: 600 .72rem 'Kanit'; }
+.about-vision-intro h3 { margin: 17px 0 0; color: #f0e7f7; font: 750 clamp(1.45rem, 2.7vw, 2.15rem)/1.32 'Kanit'; text-wrap: balance; }
+.about-vision-intro > p { margin: 0; padding-left: 22px; border-left: 2px solid rgba(192, 132, 252, .43); color: #b7aebe; font-size: .94rem; line-height: 1.9; text-wrap: pretty; }
 .about-vision-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; margin-top: 18px; }
 .about-vision-grid article { display: flex; align-items: flex-start; gap: 13px; min-height: 106px; padding: 18px; border: 1px solid rgba(168, 85, 247, .15); border-radius: 16px; background: rgba(36, 30, 67, .58); }
 .about-vision-icon { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border: 1px solid rgba(168, 85, 247, .27); border-radius: 11px; background: rgba(168, 85, 247, .12); color: #c084fc; }
@@ -246,7 +244,8 @@
   .achievement-grid { grid-template-columns: 1fr; }
   .achievement-grid article { min-height: 0; padding: 20px; }
   .about-vision { margin-top: 55px; }
-  .about-vision-quote { padding: 23px 20px; }
+  .about-vision-intro { grid-template-columns: 1fr; gap: 16px; padding: 23px 20px; }
+  .about-vision-intro > p { padding-left: 16px; font-size: .88rem; }
   .about-vision-grid { grid-template-columns: 1fr; gap: 10px; }
   .about-vision-grid article { min-height: 0; padding: 15px; }
   .about-vision-story { padding: 20px; }
