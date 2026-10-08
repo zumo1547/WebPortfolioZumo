@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   ArrowRight,
   Atom,
@@ -14,6 +15,8 @@ import {
   Github,
   Medal,
   Microscope,
+  Pause,
+  Play,
   Radio,
   ScanSearch,
   ServerCog,
@@ -23,7 +26,9 @@ import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Seo } from '../components/Seo'
 import { techStack } from '../data'
-import { assetUrl } from '../lib/supabase'
+import { sortProjectsByImportance } from '../lib/projectRanking'
+import { assetUrl, projectImageUrl, supabase } from '../lib/supabase'
+import type { Project } from '../types'
 import './HomePage.css'
 
 const marquee = ['GAME DEV', 'IoT SYSTEMS', 'REACT', 'TYPESCRIPT', 'ESP32', 'PYTHON', 'ROBOTICS', 'AI DETECTION', 'SUPABASE']
@@ -72,6 +77,56 @@ const techIcons: Record<string, LucideIcon> = {
   server: ServerCog,
 }
 
+function ProjectSlideBackdrop() {
+  const [projects, setProjects] = useState<Project[]>([])
+  const [paused, setPaused] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    async function loadProjects() {
+      const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false })
+      if (active && !error) setProjects(sortProjectsByImportance((data as Project[]) || [])
+        .filter((project) => project.images?.[0]).slice(0, 6))
+    }
+    void loadProjects()
+    return () => { active = false }
+  }, [])
+
+  if (projects.length === 0) return null
+
+  const slides = projects.length < 3 ? [...projects, ...projects, ...projects].slice(0, 4) : projects
+
+  return (
+    <>
+      <div className={`hero-slide-backdrop${paused ? ' is-paused' : ''}`} aria-hidden="true">
+        {[0, 1].map((lane) => (
+          <div className={`hero-slide-lane hero-slide-lane-${lane + 1}`} key={lane}>
+            <div className="hero-slide-reel">
+              {[0, 1].map((copy) => (
+                <div className="hero-slide-group" key={copy}>
+                  {(lane === 0 ? slides : [...slides].reverse()).map((project, index) => (
+                    <div className="hero-slide-card" key={`${project.id}-${index}`}>
+                      <img src={projectImageUrl(project.images[0])} alt="" loading="lazy" decoding="async" />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <button
+        className="hero-slide-toggle"
+        type="button"
+        aria-label={paused ? 'เล่นสไลด์ผลงาน' : 'หยุดสไลด์ผลงาน'}
+        aria-pressed={paused}
+        title={paused ? 'เล่นสไลด์ผลงาน' : 'หยุดสไลด์ผลงาน'}
+        onClick={() => setPaused((current) => !current)}
+      >{paused ? <Play size={14} fill="currentColor" /> : <Pause size={14} fill="currentColor" />}</button>
+    </>
+  )
+}
+
 export function HomePage() {
   return (
     <>
@@ -92,6 +147,7 @@ export function HomePage() {
         </div>
 
         <div className="hero-visual reveal delay-1">
+          <ProjectSlideBackdrop />
           <div className="orbit orbit-a" /><div className="orbit orbit-b" />
           <div className="profile-frame">
             <img src={assetUrl('assets/STUDENT_Wutthipat.png')} alt="Wutthipat Sriyangnok" />
