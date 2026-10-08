@@ -79,4 +79,6 @@ Build command คือ `npm run build` และ output directory คือ `di
 
 หน้า `/auth/callback` รองรับทั้งลิงก์ยืนยันอีเมลและลิงก์ตั้งรหัสผ่านใหม่ หากลิงก์เดิมหมดอายุ ผู้ใช้ส่งอีเมลยืนยันซ้ำได้จากหน้าสมัครหรือหน้าเข้าสู่ระบบ
 
+เทมเพลตอีเมลภาษาไทยพร้อมโลโก้สำหรับยืนยันบัญชีและตั้งรหัสผ่านใหม่อยู่ใน [`supabase/email-templates/`](supabase/email-templates/README.md) ต้องนำไปบันทึกใน Supabase Dashboard เพราะการ deploy โค้ดเว็บไม่เปลี่ยนอีเมลที่ Supabase ส่ง
+
 > ห้ามใส่ `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_SECRET_KEY`, JWT secret หรือรหัสผ่าน PostgreSQL ใน source code และ GitHub repository
