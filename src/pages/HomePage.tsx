@@ -117,12 +117,31 @@ function ProjectSlideBackdrop() {
 }
 
 export function HomePage() {
+  useEffect(() => {
+    const elements = document.querySelectorAll<HTMLElement>('.home-reveal')
+    if (!('IntersectionObserver' in window)) {
+      elements.forEach((element) => element.classList.add('is-visible'))
+      return
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible')
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' })
+    elements.forEach((element) => observer.observe(element))
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <>
       <Seo title="Wutthipat Sriyangnok — Creative Developer Portfolio" description="แฟ้มสะสมผลงานของ Wutthipat Sriyangnok นักเรียนมัธยมศึกษาปีที่ 6 รวมผลงาน IoT, AI, Robotics, Game Development และ Web Development" path="/" />
       <section className="hero section-pad home-hero">
         <ProjectSlideBackdrop />
-        <div className="hero-copy reveal">
+        <div className="hero-copy">
           <div className="eyebrow"><span className="online-dot" /> PORTFOLIO · ZUMO DEV · {new Date().getFullYear()}</div>
           <h1>CREATIVE<br /><span>DEVELOPER</span></h1>
           <p className="hero-thai">วุฒิภัทร ศรียางนอก — นักเรียนสายวิทยาศาสตร์และนวัตกรรม<br />สร้างเกม ระบบ IoT หุ่นยนต์ AI และเว็บจากการทดลองจริง</p>
@@ -155,29 +174,29 @@ export function HomePage() {
       <div className="marquee"><div>{[...marquee, ...marquee].map((item, i) => <span key={`${item}-${i}`}><i />{item}</span>)}</div></div>
 
       <section className="content-section home-impact">
-        <header className="home-section-heading reveal">
+        <header className="home-section-heading home-reveal">
           <div><span className="mono-label">// PORTFOLIO HIGHLIGHTS</span><h2>ผลงานที่วัดผลได้จริง</h2></div>
           <p>ตัวเลขสำคัญจากโครงงาน การแข่งขัน และกิจกรรมในแฟ้มสะสมผลงาน</p>
         </header>
         <div className="impact-grid">
-          {impact.map(({ icon: Icon, value, title, detail, tone }, index) => <article className={`impact-card impact-${tone} reveal`} style={{ animationDelay: `${index * 90}ms` }} key={title}>
+          {impact.map(({ icon: Icon, value, title, detail, tone }, index) => <article className={`impact-card impact-${tone} home-reveal`} key={title}>
             <div className="impact-top"><Icon aria-hidden="true" /><span>0{index + 1}</span></div>
             <strong>{value}</strong><h3>{title}</h3><p>{detail}</p>
           </article>)}
         </div>
-        <Link className="impact-link" to="/about">ดูเส้นทางและรางวัลทั้งหมด <ArrowRight size={16} /></Link>
+        <Link className="impact-link home-reveal" to="/about">ดูเส้นทางและรางวัลทั้งหมด <ArrowRight size={16} /></Link>
       </section>
 
       <section className="content-section home-tech-section">
-        <header className="home-section-heading reveal">
+        <header className="home-section-heading home-reveal">
           <div><span className="mono-label">// TECHNOLOGY USED IN PROJECTS</span><h2>เทคโนโลยีที่ผมใช้ทำโปรเจกต์</h2></div>
           <p>ผมใช้เครื่องมือแต่ละตัวกับงานจริง ตั้งแต่ทำเว็บและเกม ไปจนถึงเขียนโปรแกรมควบคุมเซนเซอร์กับบอร์ด ESP32</p>
         </header>
         <div className="tech-grid">
-          {techStack.map((tech, i) => {
+          {techStack.map((tech) => {
             const Icon = tech.icon ? techIcons[tech.icon] : null
             return (
-            <article className="tech-card reveal" style={{ animationDelay: `${i * 60}ms` }} key={tech.name}>
+            <article className="tech-card home-reveal" key={tech.name}>
               {tech.image
                 ? <img className="tech-logo" src={assetUrl(tech.image)} alt={`${tech.name} logo`} />
                 : Icon ? <Icon className="tech-lucide" aria-hidden="true" /> : null}
@@ -188,7 +207,7 @@ export function HomePage() {
       </section>
 
       <section className="content-section split-feature home-evidence">
-        <article className="feature-card reveal">
+        <article className="feature-card home-reveal">
           <div className="feature-icon purple"><Code2 /></div>
           <span className="mono-label">APPLIED SKILLS</span>
           <h2>ทักษะที่ใช้สร้างงานจริง</h2>
@@ -198,7 +217,7 @@ export function HomePage() {
           </div>
         </article>
 
-        <article className="feature-card project-callout reveal delay-1">
+        <article className="feature-card project-callout home-reveal">
           <div className="feature-icon pink"><Film /></div>
           <span className="mono-label">SELECTED WORK</span>
           <h2>จากปัญหาสู่ผลงาน</h2>
@@ -211,7 +230,7 @@ export function HomePage() {
         </article>
       </section>
 
-      <section className="content-section home-discover reveal">
+      <section className="content-section home-discover home-reveal">
         <div><span className="mono-label">// ดูผลงานเพิ่มเติม</span><h2>ผลงานที่ผมลงมือทำ</h2><p>รวมโครงงาน IoT, AI, Robotics, Game Development และเว็บไซต์ Portfolio นี้ พร้อมภาพและรายละเอียดของแต่ละงาน</p></div>
         <Link className="button" to="/projects"><FolderOpen size={18} /> เปิดดูผลงานทั้งหมด <ArrowRight size={17} /></Link>
       </section>
