@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import {
   Award,
   BookOpen,
@@ -84,20 +85,49 @@ const portfolioWorkflow = [
   },
 ]
 
+const whatDrivesMe = [
+  { icon: Cpu, title: 'เริ่มจากปัญหาใกล้ตัว', text: 'น้ำทิ้งจากเครื่องซักผ้าเป็นจุดเริ่มต้นของโครงงานเครื่องกรองไมโครไฟเบอร์ที่ผมทำกับทีม' },
+  { icon: Database, title: 'ลองแล้ววัดผล', text: 'ผมเก็บตัวอย่างก่อนและหลังกรอง ผลทดสอบลดเส้นใยจาก 137 ชิ้น เหลือหลุดรอด 9 ชิ้น' },
+  { icon: UsersRound, title: 'ทำงานกับเพื่อน', text: 'งานวิดีโอ “ขยะกำพร้า” และการแข่งขันต่าง ๆ ทำให้ผมได้ฝึกแบ่งงาน รับฟัง และแก้งานด้วยกัน' },
+  { icon: Rocket, title: 'สิ่งที่อยากทำต่อ', text: 'ผมอยากต่อยอดระบบเซนเซอร์ให้ดูผลผ่านเว็บหรือโทรศัพท์ได้ง่ายขึ้น และนำไปใช้จริงได้' },
+]
+
 export function AboutPage() {
+  const pageRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const elements = pageRef.current?.querySelectorAll<HTMLElement>('.about-reveal')
+    if (!elements) return
+    if (!('IntersectionObserver' in window)) {
+      elements.forEach((element) => element.classList.add('is-visible'))
+      return
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible')
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { threshold: 0.08, rootMargin: '0px 0px -36px 0px' })
+    elements.forEach((element) => observer.observe(element))
+    return () => observer.disconnect()
+  }, [])
+
   return (
-    <section className="content-section page-section about-page">
+    <section className="content-section page-section about-page" ref={pageRef}>
       <Seo title="About — Wutthipat Sriyangnok" description="รู้จัก Wutthipat Sriyangnok นักเรียนมัธยมศึกษาปีที่ 6 พร้อมเส้นทางการเรียนรู้ รางวัล และเครื่องมือที่ใช้สร้างผลงาน" path="/about" />
       <PageHeader eyebrow="PROFILE DATABASE" title="ABOUT" accent="ME">สิ่งที่ผมสนใจ ผลงานที่เคยทำ และเครื่องมือที่ใช้พัฒนาแต่ละโปรเจกต์</PageHeader>
 
-      <div className="about-signal-strip reveal" aria-label="ข้อมูลปัจจุบัน">
+      <div className="about-signal-strip about-reveal" aria-label="ข้อมูลปัจจุบัน">
         <article><span>01 / CURRENT</span><b>มัธยมศึกษาปีที่ 6</b><small>Science &amp; Innovation</small></article>
         <article><span>02 / FOCUS</span><b>IoT · AI · Web</b><small>สร้างระบบจากปัญหาใกล้ตัว</small></article>
         <article><span>03 / PROCESS</span><b>Build · Test · Improve</b><small>ทดลอง วัดผล และพัฒนาต่อ</small></article>
       </div>
 
       <div className="about-grid">
-        <article className="profile-panel reveal">
+        <article className="profile-panel about-reveal">
           <div className="panel-line" />
           <img src={assetUrl('assets/STUDENT_Wutthipat.png')} alt="Wutthipat Sriyangnok" />
           <div className="profile-panel-copy">
@@ -115,7 +145,7 @@ export function AboutPage() {
         <div className="timeline">
           <div className="timeline-heading"><span className="mono-label">// LEARNING PATH</span><b>สิ่งที่ผมกำลังพัฒนา</b></div>
           {timeline.map((item, index) => (
-            <article className="timeline-item reveal" style={{ animationDelay: `${index * 80}ms` }} key={item.title}>
+            <article className="timeline-item about-reveal" key={item.title}>
               <div className="timeline-icon">{item.icon}</div>
               <div><span>0{index + 1}</span><h3>{item.title}</h3><p>{item.text}</p></div>
             </article>
@@ -123,7 +153,51 @@ export function AboutPage() {
         </div>
       </div>
 
-      <section className="portfolio-build reveal" aria-labelledby="portfolio-build-title">
+      <section className="portfolio-proof about-reveal" aria-labelledby="portfolio-proof-title">
+        <header>
+          <div><span className="mono-label">// VERIFIED HIGHLIGHTS</span><h2 id="portfolio-proof-title">ตัวเลขจากผลงานจริง</h2></div>
+          <p>ข้อมูลสรุปจากแฟ้มสะสมผลงาน ครอบคลุมผลการเรียน การแข่งขัน และผลทดสอบโครงงาน</p>
+        </header>
+        <div className="highlight-grid">
+          {highlights.map((item) => <article key={item.label}><strong>{item.value}</strong><b>{item.label}</b><span>{item.detail}</span></article>)}
+        </div>
+      </section>
+
+      <section className="achievement-board about-reveal" aria-labelledby="achievement-title">
+        <div className="achievement-board-heading"><span className="mono-label">// SELECTED ACHIEVEMENTS</span><h2 id="achievement-title">ผลงานเด่นและรางวัล</h2></div>
+        <div className="achievement-grid">
+          {achievements.map(({ icon: Icon, title, text }, index) => <article key={title}>
+            <div className="achievement-rank">0{index + 1}</div>
+            <Icon aria-hidden="true" />
+            <h3>{title}</h3>
+            <p>{text}</p>
+          </article>)}
+        </div>
+      </section>
+
+      <section className="about-vision" aria-labelledby="about-vision-title">
+        <header className="about-vision-heading about-reveal">
+          <span className="mono-label">// WHAT DRIVES ME</span>
+          <h2 id="about-vision-title">ทำไมผมถึงชอบลงมือทำ</h2>
+        </header>
+        <div className="about-vision-quote about-reveal">
+          <span className="about-quote-mark" aria-hidden="true">“</span>
+          <blockquote>ตอนทำเครื่องกรองไมโครไฟเบอร์ ผมอยากรู้มากกว่าแค่ว่าเครื่องทำงานไหม — <strong>มันกรองเส้นใยออกได้จริงกี่ชิ้น</strong></blockquote>
+          <p>วุฒิภัทร “Zumo” ศรียางนอก</p>
+        </div>
+        <div className="about-vision-grid">
+          {whatDrivesMe.map(({ icon: Icon, title, text }) => <article className="about-reveal" key={title}>
+            <span className="about-vision-icon"><Icon size={20} aria-hidden="true" /></span>
+            <div><h3>{title}</h3><p>{text}</p></div>
+          </article>)}
+        </div>
+        <div className="about-vision-story about-reveal">
+          <p>ผมเริ่มจากทำเกมใน Roblox และ Unity เพราะอยากรู้ว่าระบบข้างในทำงานอย่างไร ต่อมาได้ลองต่อเซนเซอร์กับ ESP32 และ micro:bit พอทำเครื่องกรองไมโครไฟเบอร์ ผมกับทีมเก็บข้อมูลก่อนและหลังกรองจนเห็นผลชัด งานแบบนี้ทำให้ผมสนุกกับทั้งการเขียนโปรแกรมและการทดลอง</p>
+          <p>ตอนนี้ผมอยากทำระบบที่ดูผลได้ง่ายขึ้น และอธิบายให้คนอื่นเข้าใจว่าแต่ละโปรเจกต์ทำอะไรได้จริง เว็บ Portfolio นี้ก็เป็นอีกงานที่ผมใช้ฝึกเรื่องนั้น</p>
+        </div>
+      </section>
+
+      <section className="portfolio-build about-reveal" aria-labelledby="portfolio-build-title">
         <header>
           <div><span className="mono-label">// HOW I BUILT THIS WEBSITE</span><h2 id="portfolio-build-title">เว็บไซต์นี้พัฒนาด้วยอะไรบ้าง</h2></div>
           <p>ตั้งแต่เขียนหน้าเว็บ จัดการฐานข้อมูล ใช้ AI ช่วยตรวจงาน ไปจนถึงนำเว็บขึ้นใช้งานจริง</p>
@@ -138,30 +212,6 @@ export function AboutPage() {
         </div>
         <div className="ai-disclosure"><Bot aria-hidden="true" /><p><strong>AI ช่วยในส่วนไหน?</strong> ใช้ OpenAI Codex ที่ทำงานด้วย GPT-6 เป็นผู้ช่วยตรวจโค้ด แนะนำวิธีแก้บั๊ก และช่วยทดสอบหน้าเว็บ ส่วนข้อมูลส่วนตัว เนื้อหาผลงาน รูปภาพ และการตัดสินใจออกแบบมาจากผม</p></div>
       </section>
-
-      <section className="portfolio-proof reveal" aria-labelledby="portfolio-proof-title">
-        <header>
-          <div><span className="mono-label">// VERIFIED HIGHLIGHTS</span><h2 id="portfolio-proof-title">ตัวเลขจากผลงานจริง</h2></div>
-          <p>ข้อมูลสรุปจากแฟ้มสะสมผลงาน ครอบคลุมผลการเรียน การแข่งขัน และผลทดสอบโครงงาน</p>
-        </header>
-        <div className="highlight-grid">
-          {highlights.map((item) => <article key={item.label}><strong>{item.value}</strong><b>{item.label}</b><span>{item.detail}</span></article>)}
-        </div>
-      </section>
-
-      <section className="achievement-board reveal" aria-labelledby="achievement-title">
-        <div className="achievement-board-heading"><span className="mono-label">// SELECTED ACHIEVEMENTS</span><h2 id="achievement-title">ผลงานเด่นและรางวัล</h2></div>
-        <div className="achievement-grid">
-          {achievements.map(({ icon: Icon, title, text }, index) => <article key={title}>
-            <div className="achievement-rank">0{index + 1}</div>
-            <Icon aria-hidden="true" />
-            <h3>{title}</h3>
-            <p>{text}</p>
-          </article>)}
-        </div>
-      </section>
-
-      <div className="achievement-strip reveal"><Award /><div><b>เป้าหมายของผม</b><p>สร้างเทคโนโลยีที่แก้ปัญหาได้จริง วัดผลได้ และพัฒนาต่อจนเกิดประโยชน์ต่อผู้ใช้งานและสิ่งแวดล้อม</p></div></div>
     </section>
   )
 }
