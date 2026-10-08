@@ -91,7 +91,7 @@ function ProjectSlideBackdrop() {
 
   if (projects.length === 0) return null
 
-  const slides = Array.from({ length: 12 }, (_, index) => projects[index % projects.length])
+  const slides = Array.from({ length: 10 }, (_, index) => projects[index % projects.length])
 
   return (
     <div className="hero-slide-backdrop" aria-hidden="true">
@@ -103,7 +103,7 @@ function ProjectSlideBackdrop() {
                 <div className="hero-slide-group" key={copy}>
                   {(lane % 2 === 0 ? slides : [...slides].reverse()).map((project, index) => (
                     <div className="hero-slide-card" key={`${project.id}-${index}`}>
-                      <img src={projectImageUrl(project.images[0])} alt="" loading="lazy" decoding="async" />
+                      <img src={projectImageUrl(project.images[0])} alt="" loading={lane === 0 && copy === 0 ? 'eager' : 'lazy'} decoding="async" />
                     </div>
                   ))}
                 </div>

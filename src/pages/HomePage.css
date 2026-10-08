@@ -17,22 +17,26 @@
   mask-image: linear-gradient(90deg, rgba(0, 0, 0, .42), #000 62%);
 }
 .hero-slide-plane {
+  --hero-card-width: clamp(320px, 24vw, 460px);
+  --hero-card-height: clamp(205px, 15.5vw, 296px);
   position: absolute;
   top: 50%;
   left: 50%;
-  width: max(145vw, 160vh);
-  height: max(730px, 100vh);
-  transform: translate(-50%, -50%) rotate(-45deg);
+  width: max(150vw, 160vh);
+  height: max(850px, 100vh);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 30px;
+  transform: translate(-50%, -50%) rotate(-12deg);
 }
-.hero-slide-lane { position: absolute; left: 0; right: 0; height: 206px; overflow: hidden; }
-.hero-slide-lane-1 { top: 13%; }
-.hero-slide-lane-2 { bottom: 13%; }
-.hero-slide-reel { display: flex; width: max-content; animation: hero-slide-drift 84s linear infinite; will-change: transform; backface-visibility: hidden; }
-.hero-slide-lane-2 .hero-slide-reel { animation-direction: reverse; animation-duration: 94s; }
-.hero-slide-group { display: flex; gap: 18px; padding-right: 18px; }
+.hero-slide-lane { height: var(--hero-card-height); flex: none; overflow: hidden; }
+.hero-slide-reel { display: flex; width: max-content; animation: hero-slide-drift 115s linear infinite; will-change: transform; backface-visibility: hidden; }
+.hero-slide-lane-2 .hero-slide-reel { animation-direction: reverse; animation-duration: 128s; }
+.hero-slide-group { display: flex; gap: 24px; padding-right: 24px; }
 .hero-slide-card {
-  width: 300px;
-  height: 198px;
+  width: var(--hero-card-width);
+  height: var(--hero-card-height);
   flex: none;
   overflow: hidden;
   border: 1px solid rgba(216, 180, 254, .4);
@@ -183,9 +187,8 @@
 
 @media (max-width: 520px) {
   .hero-slide-backdrop { opacity: .17; -webkit-mask-image: none; mask-image: none; }
-  .hero-slide-plane { width: max(145vw, 160vh); height: max(730px, 100vh); }
-  .hero-slide-lane { height: 150px; }
-  .hero-slide-card { width: 220px; height: 142px; border-radius: 12px; }
+  .hero-slide-plane { --hero-card-width: 255px; --hero-card-height: 162px; width: max(150vw, 160vh); height: max(850px, 100vh); gap: 20px; }
+  .hero-slide-card { border-radius: 12px; }
   .home-intro-tags { gap: 5px; }
   .home-intro-tags span { font-size: .61rem; }
   .home-hero .hero-visual {
