@@ -91,12 +91,12 @@ function ProjectSlideBackdrop() {
 
   if (projects.length === 0) return null
 
-  const slides = Array.from({ length: 14 }, (_, index) => projects[index % projects.length])
+  const slides = Array.from({ length: 12 }, (_, index) => projects[index % projects.length])
 
   return (
     <div className="hero-slide-backdrop" aria-hidden="true">
       <div className="hero-slide-plane">
-        {[0, 1, 2, 3].map((lane) => (
+        {[0, 1].map((lane) => (
           <div className={`hero-slide-lane hero-slide-lane-${lane + 1}`} key={lane}>
             <div className="hero-slide-reel">
               {[0, 1].map((copy) => (
