@@ -15,8 +15,6 @@ import {
   Github,
   Medal,
   Microscope,
-  Pause,
-  Play,
   Radio,
   ScanSearch,
   ServerCog,
@@ -79,7 +77,6 @@ const techIcons: Record<string, LucideIcon> = {
 
 function ProjectSlideBackdrop() {
   const [projects, setProjects] = useState<Project[]>([])
-  const [paused, setPaused] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -94,17 +91,17 @@ function ProjectSlideBackdrop() {
 
   if (projects.length === 0) return null
 
-  const slides = projects.length < 3 ? [...projects, ...projects, ...projects].slice(0, 4) : projects
+  const slides = Array.from({ length: 14 }, (_, index) => projects[index % projects.length])
 
   return (
-    <>
-      <div className={`hero-slide-backdrop${paused ? ' is-paused' : ''}`} aria-hidden="true">
-        {[0, 1].map((lane) => (
+    <div className="hero-slide-backdrop" aria-hidden="true">
+      <div className="hero-slide-plane">
+        {[0, 1, 2, 3].map((lane) => (
           <div className={`hero-slide-lane hero-slide-lane-${lane + 1}`} key={lane}>
             <div className="hero-slide-reel">
               {[0, 1].map((copy) => (
                 <div className="hero-slide-group" key={copy}>
-                  {(lane === 0 ? slides : [...slides].reverse()).map((project, index) => (
+                  {(lane % 2 === 0 ? slides : [...slides].reverse()).map((project, index) => (
                     <div className="hero-slide-card" key={`${project.id}-${index}`}>
                       <img src={projectImageUrl(project.images[0])} alt="" loading="lazy" decoding="async" />
                     </div>
@@ -115,15 +112,7 @@ function ProjectSlideBackdrop() {
           </div>
         ))}
       </div>
-      <button
-        className="hero-slide-toggle"
-        type="button"
-        aria-label={paused ? 'เล่นสไลด์ผลงาน' : 'หยุดสไลด์ผลงาน'}
-        aria-pressed={paused}
-        title={paused ? 'เล่นสไลด์ผลงาน' : 'หยุดสไลด์ผลงาน'}
-        onClick={() => setPaused((current) => !current)}
-      >{paused ? <Play size={14} fill="currentColor" /> : <Pause size={14} fill="currentColor" />}</button>
-    </>
+    </div>
   )
 }
 
@@ -132,6 +121,7 @@ export function HomePage() {
     <>
       <Seo title="Wutthipat Sriyangnok — Creative Developer Portfolio" description="แฟ้มสะสมผลงานของ Wutthipat Sriyangnok นักเรียนมัธยมศึกษาปีที่ 6 รวมผลงาน IoT, AI, Robotics, Game Development และ Web Development" path="/" />
       <section className="hero section-pad home-hero">
+        <ProjectSlideBackdrop />
         <div className="hero-copy reveal">
           <div className="eyebrow"><span className="online-dot" /> PORTFOLIO · ZUMO DEV · {new Date().getFullYear()}</div>
           <h1>CREATIVE<br /><span>DEVELOPER</span></h1>
@@ -147,7 +137,6 @@ export function HomePage() {
         </div>
 
         <div className="hero-visual reveal delay-1">
-          <ProjectSlideBackdrop />
           <div className="orbit orbit-a" /><div className="orbit orbit-b" />
           <div className="profile-frame">
             <img src={assetUrl('assets/STUDENT_Wutthipat.png')} alt="Wutthipat Sriyangnok" />
