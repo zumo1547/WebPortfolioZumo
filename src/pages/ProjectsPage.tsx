@@ -10,12 +10,14 @@ import {
   Images,
   Landmark,
   Link2,
+  Monitor,
   Pencil,
   Pause,
   Play,
   Plus,
   Search,
   Share2,
+  Smartphone,
   School,
   Tag,
   Target,
@@ -26,7 +28,7 @@ import {
   Youtube,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react'
+import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
@@ -84,19 +86,32 @@ const stripDescriptionFormatting = (text: string) => text
   .replace(/\*\*([^*\n]+)\*\*/g, '$1')
   .replace(/\*([^*\n]+)\*/g, '$1')
 
-function FormattedDescription({ text }: { text: string }) {
-  const lines = text.split('\n')
-  const tokenPattern = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*)/g
+const thaiWordSegmenter = typeof Intl.Segmenter === 'function'
+  ? new Intl.Segmenter('th', { granularity: 'word' })
+  : null
 
-  return <>{lines.map((line, lineIndex) => <Fragment key={`${lineIndex}-${line}`}>
-    {line.split(tokenPattern).filter(Boolean).map((part, index) => {
-      if (part.startsWith('**') && part.endsWith('**')) return <strong key={index}>{part.slice(2, -2)}</strong>
-      if (part.startsWith('*') && part.endsWith('*')) return <em key={index}>{part.slice(1, -1)}</em>
-      return <Fragment key={index}>{part}</Fragment>
-    })}
-    {lineIndex < lines.length - 1 && <br />}
-  </Fragment>)}</>
+function ReadableWords({ text }: { text: string }) {
+  if (!thaiWordSegmenter) return text
+  return <>{Array.from(thaiWordSegmenter.segment(text), ({ segment, isWordLike }, index) =>
+    isWordLike && /\p{Script=Thai}/u.test(segment)
+      ? <span className="thai-word" key={index}>{segment}</span>
+      : <Fragment key={index}>{segment}</Fragment>,
+  )}</>
 }
+
+const FormattedDescription = memo(function FormattedDescription({ text }: { text: string }) {
+  const paragraphs = text.trim().replace(/\r\n?/g, '\n').split(/\n\s*\n+/)
+  const tokenPattern = /(\*\*[^*]+\*\*|\*[^*]+\*)/g
+
+  return <div className="formatted-description">{paragraphs.map((paragraph, paragraphIndex) => {
+    const flowingText = paragraph.split('\n').map((line) => line.trim()).join(' ')
+    return <p key={paragraphIndex}>{flowingText.split(tokenPattern).filter(Boolean).map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) return <strong key={index}><ReadableWords text={part.slice(2, -2)} /></strong>
+      if (part.startsWith('*') && part.endsWith('*')) return <em key={index}><ReadableWords text={part.slice(1, -1)} /></em>
+      return <ReadableWords text={part} key={index} />
+    })}</p>
+  })}</div>
+})
 
 function TagBadges({ tags }: { tags: string[] }) {
   return <div className="project-tags">
@@ -252,7 +267,7 @@ export function ProjectsPage() {
               <div className="project-body">
                 <AwardBadge project={project} />
                 <TagBadges tags={project.tags || []} />
-                <h2>{project.name}</h2>
+                <h2><ReadableWords text={project.name} /></h2>
                 <p>{stripDescriptionFormatting(project.description)}</p>
               </div>
             </button>
@@ -411,8 +426,8 @@ export function ProjectModal({ project, onClose }: { project: Project; onClose: 
         <div className="modal-content">
           <AwardBadge project={project} large />
           <TagBadges tags={project.tags || []} />
-          <h2 id="project-modal-title">{project.name}</h2>
-          <p className="formatted-description"><FormattedDescription text={project.description} /></p>
+          <h2 id="project-modal-title"><ReadableWords text={project.name} /></h2>
+          <FormattedDescription text={project.description} />
         </div>
       </div>
     </article>
@@ -436,6 +451,7 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
   const [savingStatus, setSavingStatus] = useState('')
   const [error, setError] = useState('')
   const [deleteArmed, setDeleteArmed] = useState(initialDeleteArmed)
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop')
   const descriptionRef = useRef<HTMLTextAreaElement>(null)
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -583,7 +599,17 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
               </div>
             </div>
             <textarea id="project-description" ref={descriptionRef} required maxLength={3000} rows={7} value={value.description} onChange={(event) => setValue({ ...value, description: event.target.value })} placeholder="เขียนรายละเอียดของโปรเจกต์ แล้วเลือกข้อความเพื่อทำตัวหนาหรือตัวเอียง" />
-            {!!value.description && <div className="description-preview"><span>ตัวอย่างที่จะแสดง</span><p className="formatted-description"><FormattedDescription text={value.description} /></p></div>}
+            {!!value.description && <div className="description-preview">
+              <div className="description-preview-header">
+                <span>ตัวอย่างที่จะแสดง</span>
+                <div role="group" aria-label="ขนาดตัวอย่างคำอธิบาย">
+                  <button type="button" className={previewMode === 'desktop' ? 'active' : ''} aria-pressed={previewMode === 'desktop'} onClick={() => setPreviewMode('desktop')}><Monitor size={13} /> คอม</button>
+                  <button type="button" className={previewMode === 'mobile' ? 'active' : ''} aria-pressed={previewMode === 'mobile'} onClick={() => setPreviewMode('mobile')}><Smartphone size={13} /> มือถือ</button>
+                </div>
+              </div>
+              <div className={`description-preview-content ${previewMode}`}><FormattedDescription text={value.description} /></div>
+              <small>Enter ครั้งเดียวให้ข้อความปรับตามหน้าจอ · เว้นหนึ่งบรรทัดเพื่อขึ้นย่อหน้าใหม่</small>
+            </div>}
           </div>
         </section>
 
