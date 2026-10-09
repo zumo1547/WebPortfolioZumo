@@ -1,4 +1,5 @@
 .about-page { position: relative; }
+.about-page .about-thai-word { white-space: nowrap; }
 .about-page::before {
   content: '';
   position: absolute;
@@ -91,6 +92,7 @@
   background: linear-gradient(115deg, rgba(22, 12, 42, .78), rgba(13, 8, 28, .78));
   transition: transform .3s, border-color .3s, background .3s, box-shadow .3s;
 }
+.about-page .timeline-item > div:last-child { min-width: 0; }
 .about-page .timeline-item::before {
   content: '';
   position: absolute;
@@ -227,25 +229,36 @@
 .about-vision::before { content: ''; position: absolute; z-index: -1; inset: 30px 0 0; background: radial-gradient(ellipse at 50% 30%, rgba(99, 70, 180, .13), transparent 67%); pointer-events: none; }
 .about-vision-heading { margin-bottom: 25px; text-align: center; }
 .about-vision-heading .mono-label { color: #b989e8; }
-.about-vision-heading h2 { margin: 8px 0 0; background: linear-gradient(95deg, #b98bf4, #f078b9 75%); background-clip: text; color: transparent; font: 800 clamp(1.9rem, 4vw, 2.7rem) 'Kanit'; }
-.about-vision-intro { display: grid; grid-template-columns: 1.1fr .9fr; align-items: end; gap: clamp(22px, 5vw, 65px); padding: clamp(26px, 4vw, 44px); border: 1px solid rgba(176, 129, 238, .2); border-radius: 24px; background: radial-gradient(circle at 5% 0, rgba(168, 85, 247, .14), transparent 42%), linear-gradient(130deg, rgba(24, 22, 48, .94), rgba(14, 17, 35, .95)); box-shadow: 0 24px 65px rgba(0, 0, 0, .2); }
+.about-vision-heading h2 { max-width: 950px; margin: 8px auto 0; background: linear-gradient(95deg, #b98bf4, #f078b9 75%); background-clip: text; color: transparent; font: 800 clamp(1.9rem, 4vw, 2.7rem)/1.35 'Kanit'; text-wrap: balance; }
+.about-vision-intro { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); align-items: start; gap: clamp(22px, 5vw, 65px); padding: clamp(26px, 4vw, 44px); border: 1px solid rgba(176, 129, 238, .2); border-radius: 24px; background: radial-gradient(circle at 5% 0, rgba(168, 85, 247, .14), transparent 42%), linear-gradient(130deg, rgba(24, 22, 48, .94), rgba(14, 17, 35, .95)); box-shadow: 0 24px 65px rgba(0, 0, 0, .2); }
+.about-vision-intro > div { min-width: 0; }
 .about-vision-kicker { display: inline-flex; padding: 6px 11px; border: 1px solid rgba(192, 132, 252, .3); border-radius: 999px; background: rgba(168, 85, 247, .1); color: #d8b4fe; font: 600 .72rem 'Kanit'; }
 .about-vision-intro h3 { margin: 17px 0 0; color: #f0e7f7; font: 750 clamp(1.45rem, 2.7vw, 2.15rem)/1.32 'Kanit'; text-wrap: balance; }
 .about-vision-intro > p { margin: 0; padding-left: 22px; border-left: 2px solid rgba(192, 132, 252, .43); color: #b7aebe; font-size: .94rem; line-height: 1.9; text-wrap: pretty; }
 .about-vision-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; margin-top: 18px; }
 .about-vision-grid article { display: flex; align-items: flex-start; gap: 13px; min-height: 106px; padding: 18px; border: 1px solid rgba(168, 85, 247, .15); border-radius: 16px; background: rgba(36, 30, 67, .58); }
+.about-vision-grid article > div { min-width: 0; }
 .about-vision-icon { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border: 1px solid rgba(168, 85, 247, .27); border-radius: 11px; background: rgba(168, 85, 247, .12); color: #c084fc; }
 .about-vision-grid article:nth-child(2) .about-vision-icon { border-color: rgba(56, 189, 248, .27); background: rgba(56, 189, 248, .1); color: #6bd6f9; }
 .about-vision-grid article:nth-child(3) .about-vision-icon { border-color: rgba(251, 191, 36, .26); background: rgba(251, 191, 36, .09); color: #fbbf24; }
 .about-vision-grid article:nth-child(4) .about-vision-icon { border-color: rgba(52, 211, 153, .25); background: rgba(52, 211, 153, .09); color: #6ee7b7; }
-.about-vision-grid h3 { margin: 0 0 5px; color: #dbc1f4; font: 700 1rem 'Kanit'; }
+.about-vision-grid h3 { margin: 0 0 5px; color: #dbc1f4; font: 700 1rem/1.5 'Kanit'; text-wrap: pretty; }
 .about-vision-grid article:nth-child(2) h3 { color: #8edff5; }
 .about-vision-grid article:nth-child(3) h3 { color: #f3ca77; }
 .about-vision-grid article:nth-child(4) h3 { color: #8adbbc; }
 .about-vision-grid p { margin: 0; color: #a49cb2; font-size: .83rem; line-height: 1.65; }
-.about-vision-story { margin-top: 18px; padding: 25px 29px; border: 1px solid rgba(168, 85, 247, .17); border-radius: 18px; background: rgba(17, 18, 36, .88); }
-.about-vision-story p { margin: 0; color: #b6aec2; font-size: .9rem; line-height: 1.85; text-wrap: pretty; }
-.about-vision-story p + p { margin-top: 13px; color: #8f879d; }
+.about-vision-story { margin-top: 20px; padding: clamp(21px, 3vw, 30px); border: 1px solid rgba(168, 85, 247, .2); border-radius: 20px; background: radial-gradient(circle at 0 0, rgba(168, 85, 247, .11), transparent 45%), rgba(17, 18, 36, .9); }
+.about-vision-story-heading { display: flex; align-items: center; gap: 14px; }
+.about-vision-story-icon { width: 49px; height: 49px; flex: none; display: grid; place-items: center; border: 1px solid rgba(192, 132, 252, .32); border-radius: 14px; background: rgba(168, 85, 247, .13); color: #d8b4fe; }
+.about-vision-story-heading .mono-label { color: #a991c7; }
+.about-vision-story-heading h3 { margin: 3px 0 0; color: #f1e9f8; font: 800 clamp(1.35rem, 2.6vw, 1.85rem)/1.35 'Kanit'; }
+.about-vision-story-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 21px; }
+.about-vision-story-panel { min-width: 0; padding: 22px 23px; border: 1px solid rgba(168, 85, 247, .16); border-radius: 15px; background: rgba(11, 9, 27, .56); }
+.about-vision-story-panel:nth-child(2) { border-color: rgba(56, 189, 248, .18); background: rgba(13, 19, 37, .58); }
+.about-vision-story-panel > .mono-label { color: #b989e8; }
+.about-vision-story-panel:nth-child(2) > .mono-label { color: #75c9e9; }
+.about-vision-story-panel p { margin: 13px 0 0; color: #bdb4c8; font-size: .9rem; line-height: 1.95; text-wrap: pretty; }
+.about-vision-quote { display: block; margin-top: 17px; padding: 3px 0 3px 16px; border-left: 3px solid #80d4f6; background: linear-gradient(100deg, #b9e9ff, #d8b4fe 65%, #f9a8d4); background-clip: text; color: transparent; font: 700 clamp(1.2rem, 2.3vw, 1.6rem)/1.55 'Kanit'; text-wrap: pretty; }
 .about-vision + .portfolio-build { margin-top: 55px; }
 
 .about-page .about-reveal { opacity: 0; transform: translate3d(0, 32px, 0); transition: opacity .75s ease, transform .86s cubic-bezier(.16, 1.14, .29, 1), border-color .25s, background .25s, box-shadow .25s; }
@@ -255,6 +268,7 @@
 
 @media (max-width: 860px) {
   .about-signal-strip { margin-top: -15px; }
+  .about-vision-story-grid { grid-template-columns: 1fr; }
   .portfolio-build-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .highlight-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .highlight-grid article:nth-child(2) { border-right: 0; }
@@ -280,7 +294,10 @@
   .about-vision-intro > p { padding-left: 16px; font-size: .88rem; }
   .about-vision-grid { grid-template-columns: 1fr; gap: 10px; }
   .about-vision-grid article { min-height: 0; padding: 15px; }
-  .about-vision-story { padding: 20px; }
+  .about-vision-story { padding: 19px; }
+  .about-vision-story-panel { padding: 19px 17px; }
+  .about-vision-story-panel p { font-size: .88rem; }
+  .about-vision-quote { font-size: clamp(1.17rem, 5vw, 1.4rem); }
   .portfolio-build { padding: 20px 14px; }
   .portfolio-build > header { align-items: flex-start; flex-direction: column; gap: 9px; }
   .portfolio-build > header > p { text-align: left; }
