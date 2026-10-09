@@ -1,5 +1,5 @@
 .about-page { position: relative; }
-.about-page .about-thai-word { white-space: nowrap; }
+.about-page .about-thai-word { white-space: nowrap; font: inherit; color: inherit; letter-spacing: inherit; }
 .about-page::before {
   content: '';
   position: absolute;
@@ -234,6 +234,7 @@
 .about-vision-intro > div { min-width: 0; }
 .about-vision-kicker { display: inline-flex; padding: 6px 11px; border: 1px solid rgba(192, 132, 252, .3); border-radius: 999px; background: rgba(168, 85, 247, .1); color: #d8b4fe; font: 600 .72rem 'Kanit'; }
 .about-vision-intro h3 { margin: 17px 0 0; color: #f0e7f7; font: 750 clamp(1.45rem, 2.7vw, 2.15rem)/1.32 'Kanit'; text-wrap: balance; }
+.about-origin-emphasis { color: #f4a7d3; font: inherit; }
 .about-vision-intro > p { margin: 0; padding-left: 22px; border-left: 2px solid rgba(192, 132, 252, .43); color: #b7aebe; font-size: .94rem; line-height: 1.9; text-wrap: pretty; }
 .about-vision-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; margin-top: 18px; }
 .about-vision-grid article { display: flex; align-items: flex-start; gap: 13px; min-height: 106px; padding: 18px; border: 1px solid rgba(168, 85, 247, .15); border-radius: 16px; background: rgba(36, 30, 67, .58); }
@@ -258,6 +259,7 @@
 .about-vision-story-panel > .mono-label { color: #b989e8; }
 .about-vision-story-panel:nth-child(2) > .mono-label { color: #75c9e9; }
 .about-vision-story-panel p { margin: 13px 0 0; color: #bdb4c8; font-size: .9rem; line-height: 1.95; text-wrap: pretty; }
+.about-mindset-emphasis { color: #e9b9ef; font-weight: 700; }
 .about-vision-quote { display: block; margin-top: 17px; padding: 3px 0 3px 16px; border-left: 3px solid #80d4f6; background: linear-gradient(100deg, #b9e9ff, #d8b4fe 65%, #f9a8d4); background-clip: text; color: transparent; font: 700 clamp(1.2rem, 2.3vw, 1.6rem)/1.55 'Kanit'; text-wrap: pretty; }
 .about-vision + .portfolio-build { margin-top: 55px; }
 
