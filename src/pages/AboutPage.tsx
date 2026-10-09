@@ -95,7 +95,7 @@ const whatDrivesMe = [
 ]
 
 const mindsetText = 'เวลาหุ่นยนต์วิ่งหลุดเดินตามเส้น ผมก็กลับไปเช็กค่าจากเซนเซอร์ ส่วนเครื่องกรองไมโครไฟเบอร์ แม้จะทำงานได้แล้ว ผมก็ต้องคอยเช็คประสิทธิภาพของเครื่องหลังกรอง จึงเป็นสิ่งที่ทำให้ผมค่อยๆ แก้ไขปัญหาแล้วลองทดสอบอีกครั้ง เพื่อดูว่าที่สิ่งแก้ไปได้ผลดีขึ้นจริงไหมและผมก็เป็นที่ไม่ยอมแพ้อะไรง่ายๆจนกว่าจะทำสิ่งนั้นสำเร็จ'
-const mindsetHighlight = 'ผมก็เป็นที่ไม่ยอมแพ้อะไรง่ายๆจนกว่าจะทำสิ่งนั้นสำเร็จ'
+const mindsetQuote = 'และผมก็เป็นที่ไม่ยอมแพ้อะไรง่ายๆจนกว่าจะทำสิ่งนั้นสำเร็จ'
 const visionText = 'ถ้าแม้ว่าเราจะมีปัญญาประดิษฐ์ที่สามารถวิเคราะห์ข้อมูลได้ดีแค่ไหน ถ้าเราไม่มีอุปกรณ์ที่สามารถเก็บข้อมูลได้อย่างมีประสิทธิภาพ เช่น ภาพถ่าย อุณหภูมิ หรือความชื้น ก็จะไม่สามารถใช้ประโยชน์จากปัญญาประดิษฐ์ได้อย่างเต็มที่ เพราะฉะนั้นผมจึงมองว่า "ถ้ามีระบบ IoT ที่ดี ซึ่งเป็นรากฐานที่สามารถพัฒนาปัญญาประดิษฐ์ และซอฟต์แวร์ที่ดีได้"'
 const visionQuote = '"ถ้ามีระบบ IoT ที่ดี ซึ่งเป็นรากฐานที่สามารถพัฒนาปัญญาประดิษฐ์ และซอฟต์แวร์ที่ดีได้"'
 const originText = 'ผมชอบคอมพิวเตอร์มาตั้งแต่เด็กและชอบเรียนรู้อะไรใหม่ๆอยู่ตลอด จุดเปลี่ยนของผมคือในช่วงมัธยมต้น'
@@ -227,7 +227,7 @@ export function AboutPage() {
             <div><span className="mono-label">// MINDSET &amp; VISION</span><h3 id="about-mindset-title">ทัศนคติและวิสัยทัศน์</h3></div>
           </header>
           <div className="about-vision-story-grid">
-            <div className="about-vision-story-panel"><span className="mono-label">01 / MINDSET</span><p><HighlightedThai text={mindsetText} phrase={mindsetHighlight} className="about-mindset-emphasis" /></p></div>
+            <div className="about-vision-story-panel"><span className="mono-label">01 / MINDSET</span><p><ReadableThai text={mindsetText.slice(0, -mindsetQuote.length)} /><strong className="about-vision-quote"><ReadableThai text={mindsetQuote} /></strong></p></div>
             <div className="about-vision-story-panel"><span className="mono-label">02 / VISION</span><p><ReadableThai text={visionText.slice(0, -visionQuote.length)} /><strong className="about-vision-quote"><ReadableThai text={visionQuote} /></strong></p></div>
           </div>
         </section>
