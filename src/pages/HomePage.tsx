@@ -9,7 +9,6 @@ import {
   Code2,
   Cpu,
   Database,
-  Film,
   FolderOpen,
   Gamepad2,
   Github,
@@ -23,7 +22,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Seo } from '../components/Seo'
-import { techStack } from '../data'
+import { fallbackProjects, techStack } from '../data'
 import { sortProjectsByImportance } from '../lib/projectRanking'
 import { assetUrl, projectImageUrl, supabase } from '../lib/supabase'
 import type { Project } from '../types'
@@ -55,11 +54,12 @@ const impact = [
   },
 ]
 
-const appliedSkills = [
-  ['Python', 'AI · OpenCV · Data'],
-  ['ESP32 / micro:bit', 'IoT · Sensor · Automation'],
-  ['React / TypeScript', 'Web · UI · Supabase'],
-]
+const projectSlug = (project: Project) => project.slug || `project-${project.id}`
+const projectSummary = (description: string) => description
+  .replace(/\*\*([^*\n]+)\*\*/g, '$1')
+  .replace(/\*([^*\n]+)\*/g, '$1')
+  .replace(/\s+/g, ' ')
+  .trim()
 
 const techIcons: Record<string, LucideIcon> = {
   atom: Atom,
@@ -75,23 +75,11 @@ const techIcons: Record<string, LucideIcon> = {
   server: ServerCog,
 }
 
-function ProjectSlideBackdrop() {
-  const [projects, setProjects] = useState<Project[]>([])
+function ProjectSlideBackdrop({ projects }: { projects: Project[] }) {
+  const illustrated = projects.filter((project) => project.images?.[0]).slice(0, 6)
+  if (illustrated.length === 0) return null
 
-  useEffect(() => {
-    let active = true
-    async function loadProjects() {
-      const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false })
-      if (active && !error) setProjects(sortProjectsByImportance((data as Project[]) || [])
-        .filter((project) => project.images?.[0]).slice(0, 6))
-    }
-    void loadProjects()
-    return () => { active = false }
-  }, [])
-
-  if (projects.length === 0) return null
-
-  const slides = Array.from({ length: 10 }, (_, index) => projects[index % projects.length])
+  const slides = Array.from({ length: 10 }, (_, index) => illustrated[index % illustrated.length])
 
   return (
     <div className="hero-slide-backdrop" aria-hidden="true">
@@ -117,6 +105,21 @@ function ProjectSlideBackdrop() {
 }
 
 export function HomePage() {
+  const [projects, setProjects] = useState<Project[]>([])
+  const [projectsLoading, setProjectsLoading] = useState(true)
+
+  useEffect(() => {
+    let active = true
+    async function loadProjects() {
+      const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false })
+      if (!active) return
+      setProjects(sortProjectsByImportance(error ? fallbackProjects : ((data as Project[]) || [])))
+      setProjectsLoading(false)
+    }
+    void loadProjects()
+    return () => { active = false }
+  }, [])
+
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>('.home-reveal')
     if (!('IntersectionObserver' in window)) {
@@ -140,7 +143,7 @@ export function HomePage() {
     <>
       <Seo title="Wutthipat Sriyangnok — Creative Developer Portfolio" description="แฟ้มสะสมผลงานของ Wutthipat Sriyangnok นักเรียนมัธยมศึกษาปีที่ 6 รวมผลงาน IoT, AI, Robotics, Game Development และ Web Development" path="/" />
       <section className="hero section-pad home-hero">
-        <ProjectSlideBackdrop />
+        <ProjectSlideBackdrop projects={projects} />
         <div className="hero-copy">
           <div className="eyebrow"><span className="online-dot" /> PORTFOLIO · ZUMO DEV · {new Date().getFullYear()}</div>
           <h1>CREATIVE<br /><span>DEVELOPER</span></h1>
@@ -207,26 +210,40 @@ export function HomePage() {
       </section>
 
       <section className="content-section split-feature home-evidence">
-        <article className="feature-card home-reveal">
+        <article className="feature-card applied-project-card home-reveal">
           <div className="feature-icon purple"><Code2 /></div>
           <span className="mono-label">APPLIED SKILLS</span>
           <h2>ทักษะที่ใช้สร้างงานจริง</h2>
-          <p>เรียนรู้จากการออกแบบ ทดลอง แก้ข้อผิดพลาด และนำผลงานไปแข่งขันหรือใช้งานจริง</p>
-          <div className="applied-skill-list">
-            {appliedSkills.map(([name, detail]) => <div key={name}><b>{name}</b><span>{detail}</span><ArrowRight size={15} /></div>)}
+          <p>โปรเจกต์ที่ผมทำไว้ กดแต่ละงานเพื่อดูภาพและรายละเอียด</p>
+          <div className="portfolio-source">
+            <div><span className="mono-label">THIS WEBSITE</span><b>Zumo Dev Portfolio</b><small>React · TypeScript · Supabase</small></div>
+            <div className="portfolio-source-links">
+              <a href="https://webportfoliozumo.vercel.app/" target="_blank" rel="noopener noreferrer">ดูเว็บไซต์ <ArrowRight size={13} /></a>
+              <a href="https://github.com/zumo1547/WebPortfolioZumo" target="_blank" rel="noopener noreferrer"><Github size={14} /> GitHub</a>
+            </div>
+          </div>
+          <div className="applied-project-heading"><span>PROJECT ARCHIVE</span><small>{projectsLoading ? 'กำลังโหลด...' : `${projects.length} โปรเจกต์ · เลื่อนดูได้`}</small></div>
+          <div className="applied-project-list" tabIndex={0} aria-label="รายการโปรเจกต์ เลื่อนดูได้">
+            {projects.map((project) => <Link className="applied-project-item" to={`/projects/${projectSlug(project)}`} key={project.id}>
+              <img src={projectImageUrl(project.images?.[0])} alt="" loading="lazy" />
+              <span className="applied-project-copy"><b>{project.name}</b><small>{projectSummary(project.description)}</small></span>
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>)}
+            {!projectsLoading && projects.length === 0 && <p className="applied-project-empty">ยังไม่มีโปรเจกต์ในคลังผลงาน</p>}
           </div>
         </article>
 
         <article className="feature-card project-callout home-reveal">
-          <div className="feature-icon pink"><Film /></div>
-          <span className="mono-label">SELECTED WORK</span>
-          <h2>จากปัญหาสู่ผลงาน</h2>
-          <div className="selected-work-list">
-            <p><strong>เครื่องกรองไมโครไฟเบอร์</strong><span>ระบบกรองเส้นใยจากน้ำทิ้งเครื่องซักผ้า ควบคุมด้วย ESP32</span></p>
-            <p><strong>Smart Agriculture</strong><span>วิเคราะห์ข้อมูลและควบคุมการเพาะปลูกด้วย micro:bit</span></p>
-            <p><strong>Green Job Film</strong><span>สื่อเรื่องการจัดการขยะกำพร้าและสิ่งแวดล้อมอย่างยั่งยืน</span></p>
+          <div className="feature-icon pink"><CircuitBoard /></div>
+          <span className="mono-label">BEHIND THE WORK</span>
+          <h2>ผมทำงานยังไง</h2>
+          <p>เครื่องกรองไมโครไฟเบอร์เป็นตัวอย่างของวิธีที่ผมทำโปรเจกต์กับทีม</p>
+          <div className="home-process-list">
+            <div><span>01</span><div><strong>เริ่มจากสิ่งที่สงสัย</strong><p>น้ำทิ้งจากเครื่องซักผ้ามีเส้นใยเล็ก ๆ ปนอยู่ เราเลยลองหาวิธีดักมันก่อนลงท่อ</p></div></div>
+            <div><span>02</span><div><strong>ทำต้นแบบแล้วแก้</strong><p>ประกอบเครื่องกรอง เขียนโค้ด ESP32 และปรับส่วนที่ยังทำงานไม่ตรงตามที่คิด</p></div></div>
+            <div><span>03</span><div><strong>นับผลที่ได้จริง</strong><p>ทดสอบกับน้ำทิ้งแล้วนับเส้นใยที่หลุดรอด จาก 137 ชิ้นเหลือ 9 ชิ้น</p></div></div>
           </div>
-          <Link to="/projects">ดูภาพและรายละเอียดแต่ละโปรเจกต์ <ArrowRight size={16} /></Link>
+          <Link to="/about">อ่านเรื่องราวและสิ่งที่ผมสนใจ <ArrowRight size={16} /></Link>
         </article>
       </section>
 

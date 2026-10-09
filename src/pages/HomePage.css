@@ -161,16 +161,47 @@
 .home-tech-section .tech-card:nth-child(3n) .tech-lucide { color: #f472b6; }
 .home-evidence { padding-bottom: 86px; }
 .home-evidence .feature-card h2 { font-size: clamp(1.6rem, 3vw, 2rem); }
-.applied-skill-list { display: grid; gap: 8px; margin-top: 22px; }
-.applied-skill-list > div { display: grid; grid-template-columns: 1fr 1.4fr auto; align-items: center; gap: 12px; padding: 12px 13px; border: 1px solid rgba(168, 85, 247, .13); border-radius: 11px; background: rgba(168, 85, 247, .035); }
-.applied-skill-list b { color: #ddd5e7; font-size: .8rem; }
-.applied-skill-list span { color: #777080; font: .62rem 'Share Tech Mono'; }
-.applied-skill-list svg { color: #8b5cf6; }
-.selected-work-list { display: grid; gap: 9px; margin: 20px 0 22px; }
-.selected-work-list p { margin: 0; padding-left: 13px; border-left: 2px solid rgba(236, 72, 153, .45); }
-.selected-work-list strong, .selected-work-list span { display: block; }
-.selected-work-list strong { color: #ddd5e7; font-size: .85rem; }
-.selected-work-list span { margin-top: 3px; color: #80788a; font-size: .73rem; line-height: 1.55; }
+.home-evidence .feature-card { min-width: 0; }
+.applied-project-card, .home-evidence .project-callout { display: flex; flex-direction: column; }
+.applied-project-card > p, .home-evidence .project-callout > p { margin: 4px 0 0; }
+.portfolio-source {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 22px;
+  padding: 15px 17px;
+  border: 1px solid rgba(168, 85, 247, .28);
+  border-radius: 14px;
+  background: linear-gradient(110deg, rgba(168, 85, 247, .12), rgba(56, 189, 248, .035));
+}
+.portfolio-source > div:first-child { min-width: 0; display: flex; flex-direction: column; }
+.portfolio-source .mono-label { font-size: .56rem; }
+.portfolio-source b { margin-top: 4px; color: #eee4f7; font: 700 .94rem 'Kanit'; }
+.portfolio-source small { color: #a49aac; font-size: .7rem; }
+.portfolio-source-links { flex: none; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+.portfolio-source-links a { display: inline-flex; align-items: center; gap: 5px; padding: 7px 9px; border: 1px solid rgba(192, 132, 252, .25); border-radius: 8px; color: #d9b8fc; font-size: .68rem; text-decoration: none; transition: background .2s, border-color .2s; }
+.portfolio-source-links a:hover, .portfolio-source-links a:focus-visible { border-color: rgba(192, 132, 252, .6); background: rgba(168, 85, 247, .14); }
+.applied-project-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 23px 2px 10px; }
+.applied-project-heading span { color: #a87dce; font: .6rem 'Share Tech Mono'; letter-spacing: .12em; }
+.applied-project-heading small { color: #8f849f; font-size: .68rem; }
+.applied-project-list { height: 300px; min-height: 0; display: grid; align-content: start; gap: 8px; padding: 2px 7px 2px 2px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #7952ae #1b102b; }
+.applied-project-list:focus-visible { outline: 2px solid #a855f7; outline-offset: 2px; border-radius: 10px; }
+.applied-project-item { min-width: 0; display: grid; grid-template-columns: 66px minmax(0, 1fr) 18px; align-items: center; gap: 12px; padding: 8px; border: 1px solid rgba(168, 85, 247, .16); border-radius: 12px; background: rgba(168, 85, 247, .04); text-decoration: none; transition: border-color .2s, background .2s, transform .2s; }
+.applied-project-item:hover, .applied-project-item:focus-visible { transform: translateX(3px); border-color: rgba(192, 132, 252, .48); background: rgba(168, 85, 247, .1); }
+.applied-project-item img { width: 66px; height: 66px; display: block; object-fit: cover; border-radius: 8px; background: #160d2a; }
+.applied-project-copy { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.applied-project-copy b { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: #e8def0; font: 700 .82rem/1.35 'Kanit'; }
+.applied-project-copy small { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: #8d8398; font-size: .7rem; line-height: 1.5; }
+.applied-project-item > svg { color: #b789e8; transition: transform .2s; }
+.applied-project-item:hover > svg { transform: translateX(2px); }
+.applied-project-empty { margin: 0; padding: 24px 12px; color: #92879f; font-size: .8rem; text-align: center; }
+.home-process-list { display: grid; gap: 12px; margin: 24px 0; }
+.home-process-list > div { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 14px; padding: 15px 17px; border: 1px solid rgba(236, 72, 153, .15); border-radius: 13px; background: rgba(236, 72, 153, .035); }
+.home-process-list > div > span { color: #e879c8; font: .69rem 'Share Tech Mono'; }
+.home-process-list strong { display: block; color: #e9deeb; font: 700 .9rem 'Kanit'; }
+.home-process-list p { margin: 5px 0 0; color: #958a9e; font-size: .75rem; line-height: 1.65; }
+.home-evidence .project-callout > a { width: fit-content; margin-top: auto; padding-top: 8px; }
 
 .home-discover {
   width: min(1136px, calc(100% - 36px));
@@ -241,9 +272,11 @@
   .home-hero .hero-proof-card b { white-space: normal; }
   .home-impact { padding-top: 58px; }
   .impact-card { padding: 20px; }
-  .applied-skill-list > div { grid-template-columns: 1fr auto; }
-  .applied-skill-list span { grid-column: 1 / -1; grid-row: 2; }
-  .applied-skill-list svg { grid-column: 2; grid-row: 1; }
+  .portfolio-source { align-items: flex-start; flex-direction: column; }
+  .portfolio-source-links { justify-content: flex-start; }
+  .applied-project-list { height: min(50vh, 370px); }
+  .applied-project-item { grid-template-columns: 58px minmax(0, 1fr) 16px; gap: 9px; }
+  .applied-project-item img { width: 58px; height: 58px; }
   .home-tech-section .tech-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .home-tech-section .tech-card { min-height: 135px; }
   .home-discover { width: calc(100% - 28px); padding: 24px 20px; }
