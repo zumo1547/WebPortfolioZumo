@@ -233,7 +233,7 @@ export function AboutPage() {
             <p><ReadableThai text={text} /></p>
           </article>)}
         </div>
-        <div className="ai-disclosure"><Bot aria-hidden="true" /><p><strong>AI ช่วยในส่วนไหน?</strong> <ReadableThai text="ใช้ OpenAI Codex ที่ทำงานด้วย GPT-6 เป็นผู้ช่วยตรวจโค้ด แนะนำวิธีแก้บั๊ก และช่วยทดสอบหน้าเว็บ ส่วนข้อมูลส่วนตัว เนื้อหาผลงาน รูปภาพ และการตัดสินใจออกแบบมาจากผมที่เป็นผู้พัฒนาเว็บไซต์" /></p></div>
+        <div className="ai-disclosure"><Bot aria-hidden="true" /><p><strong>AI ช่วยในส่วนไหน?</strong> <ReadableThai text="ใช้ OpenAI Codex ที่ทำงานด้วย GPT-6 เป็นผู้ช่วยตรวจโค้ด แนะนำวิธีแก้บั๊ก และช่วยทดสอบหน้าเว็บ ส่วนข้อมูลส่วนตัว เนื้อหาผลงาน รูปภาพ และการตัดสินใจออกแบบมาจากผม" /></p></div>
       </section>
     </section>
   )
