@@ -55,11 +55,26 @@ const impact = [
 ]
 
 const projectSlug = (project: Project) => project.slug || `project-${project.id}`
-const projectSummary = (description: string) => description
-  .replace(/\*\*([^*\n]+)\*\*/g, '$1')
-  .replace(/\*([^*\n]+)\*/g, '$1')
-  .replace(/\s+/g, ' ')
-  .trim()
+const summarySegmenter = typeof Intl.Segmenter === 'function'
+  ? new Intl.Segmenter('th', { granularity: 'word' })
+  : null
+
+const projectSummary = (description: string) => {
+  const clean = description
+    .replace(/\*\*([^*\n]+)\*\*/g, '$1')
+    .replace(/\*([^*\n]+)\*/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (clean.length <= 125) return clean
+  if (!summarySegmenter) return `${clean.slice(0, 125).trimEnd()}…`
+
+  let summary = ''
+  for (const { segment } of summarySegmenter.segment(clean)) {
+    if (summary.length + segment.length > 125) break
+    summary += segment
+  }
+  return `${(summary || clean.slice(0, 125)).trimEnd()}…`
+}
 
 const techIcons: Record<string, LucideIcon> = {
   atom: Atom,
