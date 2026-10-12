@@ -238,7 +238,7 @@ export function HomePage() {
           <div className="feature-icon purple"><Code2 /></div>
           <span className="mono-label">APPLIED SKILLS</span>
           <h2><ReadableThai text="ทักษะที่ใช้ในการพัฒนาโปรเจกต์" /></h2>
-          <p><ReadableThai text="โปรเจกต์ที่ผมทำไว้ การแสดงผลงานแบบย่อ สามารถกดและลิ้งจะพาไปแสดงหน้ารวบรวมผลงาน" /></p>
+          <p><ReadableThai text="โปรเจกต์ที่ผมทำไว้ การแสดงผลงานแบบย่อ สามารถกดลิ้งจะพาไปแสดงหน้ารวบรวมผลงาน" /></p>
           <div className="portfolio-source">
             <div><span className="mono-label">THIS WEBSITE</span><b>Zumo Dev Portfolio</b><small>React · TypeScript · Supabase</small></div>
             <div className="portfolio-source-links">
@@ -267,7 +267,7 @@ export function HomePage() {
             <div><span>02</span><div><strong><ReadableThai text="ทำต้นแบบแล้วแก้ไขจากปัญหาที่พบ" /></strong><p><ReadableThai text="เริ่มไอเดียออกแบบเครื่องกรองไมโครไฟเบอร์ เริ่มเขียนโค้ด โดยใช้บอร์ด ESP32 รวมถึงปรับปรุง Prototype ของตัวเครื่องให้ทำงานตามที่ต้องการ" /></p></div></div>
             <div><span>03</span><div><strong><ReadableThai text="นับผลที่ได้และพัฒนาต่อ" /></strong><p><ReadableThai text="พัฒนาและทดสอบกับน้ำทิ้งแล้วนับเส้นใยด้วยโปรแกรม ImageJ จึงพบว่าเส้นใยที่พบ จาก 137 ชิ้นเหลือ 9 ชิ้น" /></p></div></div>
           </div>
-          <Link to="/about"><ReadableThai text="สามารถอ่านเรื่องราวของผมและสิ่งที่ผมสนใจต่อได้ที่นี่" /> <ArrowRight size={16} /></Link>
+          <Link to="/about"><span><ReadableThai text="สามารถอ่านเรื่องราวของผมและสิ่งที่ผมสนใจต่อได้ที่นี่" /></span><ArrowRight size={16} /></Link>
         </article>
       </section>
 
