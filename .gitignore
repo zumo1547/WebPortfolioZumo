@@ -12,3 +12,6 @@ dist/
 
 # Personal system notes for portfolio writing; keep out of GitHub.
 /README.private.md
+
+# Generated from Git history during each local run or deployment.
+/public/updates.json

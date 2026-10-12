@@ -4,8 +4,8 @@
   "version": "2.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/generate-project-pages.mjs",
+    "dev": "node scripts/generate-updates.mjs && vite",
+    "build": "node scripts/generate-updates.mjs && tsc -b && vite build && node scripts/generate-project-pages.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "db:setup": "node scripts/setup-database.mjs",
