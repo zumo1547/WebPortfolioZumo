@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import {
   ArrowRight,
   Atom,
@@ -58,6 +58,15 @@ const projectSlug = (project: Project) => project.slug || `project-${project.id}
 const summarySegmenter = typeof Intl.Segmenter === 'function'
   ? new Intl.Segmenter('th', { granularity: 'word' })
   : null
+
+function ReadableThai({ text }: { text: string }) {
+  if (!summarySegmenter) return text
+  return <>{Array.from(summarySegmenter.segment(text), ({ segment, isWordLike }, index) =>
+    isWordLike && /\p{Script=Thai}/u.test(segment)
+      ? <span className="home-thai-word" key={index}>{segment}</span>
+      : <Fragment key={index}>{segment}</Fragment>,
+  )}</>
+}
 
 const projectSummary = (description: string) => {
   const clean = description
@@ -162,7 +171,7 @@ export function HomePage() {
         <div className="hero-copy">
           <div className="eyebrow"><span className="online-dot" /> PORTFOLIO · ZUMO DEV · {new Date().getFullYear()}</div>
           <h1>CREATIVE<br /><span>DEVELOPER</span></h1>
-          <p className="hero-thai">วุฒิภัทร ศรียางนอก — นักเรียนสายวิทยาศาสตร์และนวัตกรรม<br />สร้างเกม ระบบ IoT หุ่นยนต์ AI และเว็บจากการทดลองจริง</p>
+          <p className="hero-thai"><ReadableThai text="วุฒิภัทร ศรียางนอก — นักเรียนห้องวิทยาศาสตร์และนวัตกรรม" /><br /><ReadableThai text="เริ่มต้นด้วยความชอบ ควบคู่กับการพัฒนาทักษะและความรู้ จะนำไปสู่ผลลัพธ์ที่ดี" /></p>
           <div className="home-intro-tags" aria-label="ข้อมูลโดยย่อ">
             <span>มัธยมศึกษาปีที่ 6</span><span>Science &amp; Innovation</span><span>Samut Prakan</span>
           </div>
@@ -181,7 +190,7 @@ export function HomePage() {
           </div>
           <div className="float-chip chip-one hero-project-chip"><Code2 size={17} /><div><small>THIS WEBSITE</small><b>React · TypeScript · Supabase</b></div></div>
           <div className="float-chip chip-two hero-project-chip"><Microscope size={17} /><div><small>ENGINEERING PROJECT</small><b>ESP32-Powered Microfiber Filter</b></div></div>
-          <div className="float-chip chip-three hero-project-chip"><Bot size={17} /><div><small>AI &amp; ROBOTICS</small><b>Python · micro:bit · CiRA</b></div></div>
+          <div className="float-chip chip-three hero-project-chip"><Bot size={17} /><div><small>AI &amp; ROBOTICS</small><b>Python · Micro:bit · CiRA Core</b></div></div>
           <div className="hero-proof-card">
             <Trophy size={19} />
             <div><span>LATEST HIGHLIGHT</span><b>Science Film Festival 2025</b><small>รางวัลชนะเลิศระดับมัธยมปลาย</small></div>
@@ -208,7 +217,7 @@ export function HomePage() {
       <section className="content-section home-tech-section">
         <header className="home-section-heading home-reveal">
           <div><span className="mono-label">// TECHNOLOGY USED IN PROJECTS</span><h2>เทคโนโลยีที่ผมใช้ทำโปรเจกต์</h2></div>
-          <p>ผมใช้เครื่องมือแต่ละตัวกับงานจริง ตั้งแต่ทำเว็บและเกม ไปจนถึงเขียนโปรแกรมควบคุมเซนเซอร์กับบอร์ด ESP32</p>
+          <p><ReadableThai text="ผมใช้เครื่องมือแต่ละตัวเข้าโปรเจกต์ที่เคยเรียนรู้และพัฒนา โดยเริ่มตั้งแต่การทำเว็บและพัฒนาเกม ไปจนถึงเขียนโปรแกรมควบคุมโปรเจกต์ด้าน IoT" /></p>
         </header>
         <div className="tech-grid">
           {techStack.map((tech) => {
@@ -228,8 +237,8 @@ export function HomePage() {
         <article className="feature-card applied-project-card home-reveal">
           <div className="feature-icon purple"><Code2 /></div>
           <span className="mono-label">APPLIED SKILLS</span>
-          <h2>ทักษะที่ใช้สร้างงานจริง</h2>
-          <p>โปรเจกต์ที่ผมทำไว้ กดแต่ละงานเพื่อดูภาพและรายละเอียด</p>
+          <h2><ReadableThai text="ทักษะที่ใช้ในการพัฒนาโปรเจกต์" /></h2>
+          <p><ReadableThai text="โปรเจกต์ที่ผมทำไว้ การแสดงผลงานแบบย่อ สามารถกดและลิ้งจะพาไปแสดงหน้ารวบรวมผลงาน" /></p>
           <div className="portfolio-source">
             <div><span className="mono-label">THIS WEBSITE</span><b>Zumo Dev Portfolio</b><small>React · TypeScript · Supabase</small></div>
             <div className="portfolio-source-links">
@@ -251,19 +260,19 @@ export function HomePage() {
         <article className="feature-card project-callout home-reveal">
           <div className="feature-icon pink"><CircuitBoard /></div>
           <span className="mono-label">BEHIND THE WORK</span>
-          <h2>ผมทำงานยังไง</h2>
-          <p>เครื่องกรองไมโครไฟเบอร์เป็นตัวอย่างของวิธีที่ผมทำโปรเจกต์กับทีม</p>
+          <h2><ReadableThai text="ผมเริ่มต้นการทำงานยังไง" /></h2>
+          <p><ReadableThai text="เครื่องกรองไมโครไฟเบอร์เป็นตัวอย่างของวิธีที่ผมทำโปรเจกต์" /></p>
           <div className="home-process-list">
-            <div><span>01</span><div><strong>เริ่มจากสิ่งที่สงสัย</strong><p>น้ำทิ้งจากเครื่องซักผ้ามีเส้นใยเล็ก ๆ ปนอยู่ เราเลยลองหาวิธีดักมันก่อนลงท่อ</p></div></div>
-            <div><span>02</span><div><strong>ทำต้นแบบแล้วแก้</strong><p>ประกอบเครื่องกรอง เขียนโค้ด ESP32 และปรับส่วนที่ยังทำงานไม่ตรงตามที่คิด</p></div></div>
-            <div><span>03</span><div><strong>นับผลที่ได้จริง</strong><p>ทดสอบกับน้ำทิ้งแล้วนับเส้นใยที่หลุดรอด จาก 137 ชิ้นเหลือ 9 ชิ้น</p></div></div>
+            <div><span>01</span><div><strong><ReadableThai text="เริ่มจากความที่สงสัยและสิ่งที่สังเกตเห็น" /></strong><p><ReadableThai text="น้ำทิ้งจากเครื่องซักผ้ามีเส้นใยเล็กๆ ปนอยู่ สังเกตตะกอนเส้นใหญ่ไมโครไฟเบอร์และไมโครพลาสติกที่ตกตะกอนอยู่" /></p></div></div>
+            <div><span>02</span><div><strong><ReadableThai text="ทำต้นแบบแล้วแก้ไขจากปัญหาที่พบ" /></strong><p><ReadableThai text="เริ่มไอเดียออกแบบเครื่องกรองไมโครไฟเบอร์ เริ่มเขียนโค้ด โดยใช้บอร์ด ESP32 รวมถึงปรับปรุง Prototype ของตัวเครื่องให้ทำงานตามที่ต้องการ" /></p></div></div>
+            <div><span>03</span><div><strong><ReadableThai text="นับผลที่ได้และพัฒนาต่อ" /></strong><p><ReadableThai text="พัฒนาและทดสอบกับน้ำทิ้งแล้วนับเส้นใยด้วยโปรแกรม ImageJ จึงพบว่าเส้นใยที่พบ จาก 137 ชิ้นเหลือ 9 ชิ้น" /></p></div></div>
           </div>
-          <Link to="/about">อ่านเรื่องราวและสิ่งที่ผมสนใจ <ArrowRight size={16} /></Link>
+          <Link to="/about"><ReadableThai text="สามารถอ่านเรื่องราวของผมและสิ่งที่ผมสนใจต่อได้ที่นี่" /> <ArrowRight size={16} /></Link>
         </article>
       </section>
 
       <section className="content-section home-discover home-reveal">
-        <div><span className="mono-label">// ดูผลงานเพิ่มเติม</span><h2>ผลงานที่ผมลงมือทำ</h2><p>รวมโครงงาน IoT, AI, Robotics, Game Development และเว็บไซต์ Portfolio นี้ พร้อมภาพและรายละเอียดของแต่ละงาน</p></div>
+        <div><span className="mono-label">// ดูผลงานเพิ่มเติม</span><h2>ผลงานที่ผมลงมือทำ</h2><p><ReadableThai text="รวมรวบโครงงาน IoT, AI, Robotics, Game Development และเว็บไซต์ Portfolio นี้ พร้อมภาพและรายละเอียดของแต่ละงาน" /></p></div>
         <Link className="button" to="/projects"><FolderOpen size={18} /> เปิดดูผลงานทั้งหมด <ArrowRight size={17} /></Link>
       </section>
     </>

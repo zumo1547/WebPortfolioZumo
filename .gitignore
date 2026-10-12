@@ -9,3 +9,6 @@ dist/
 
 # Legacy PHP application kept locally for reference during migration.
 /legacy-php/
+
+# Personal system notes for portfolio writing; keep out of GitHub.
+/README.private.md
