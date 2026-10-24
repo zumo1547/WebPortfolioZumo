@@ -6,6 +6,7 @@ import {
   FolderOpen,
   Mail,
   Pencil,
+  Power,
   Plus,
   RefreshCcw,
   Search,
@@ -19,6 +20,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { PageHeader } from '../components/PageHeader'
 import { useAuth } from '../context/AuthContext'
+import { useProjectsVisibility } from '../context/ProjectsVisibilityContext'
 import { projectImageUrl, supabase } from '../lib/supabase'
 import { sortProjectsByImportance } from '../lib/projectRanking'
 import type { AdminActivity, ContactMessage, Profile, Project, UserRole } from '../types'
@@ -39,6 +41,7 @@ const formatDate = (value: string) => new Date(value).toLocaleString('th-TH', { 
 
 export function DashboardPage() {
   const { user } = useAuth()
+  const { maintenance: projectsMaintenance, loading: visibilityLoading, error: visibilityError, refresh: refreshVisibility, setMaintenance } = useProjectsVisibility()
   const [projects, setProjects] = useState<Project[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [messages, setMessages] = useState<ContactMessage[]>([])
@@ -53,6 +56,7 @@ export function DashboardPage() {
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null)
   const [deleteMessageArmed, setDeleteMessageArmed] = useState(false)
   const [working, setWorking] = useState(false)
+  const [visibilitySaving, setVisibilitySaving] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -140,15 +144,36 @@ export function DashboardPage() {
 
   const unreadMessages = messages.filter((message) => !message.read).length
 
+  const toggleProjectsMaintenance = async () => {
+    setVisibilitySaving(true)
+    setError('')
+    const updateError = await setMaintenance(!projectsMaintenance)
+    if (updateError) setError(`เปลี่ยนสถานะหน้าโปรเจกต์ไม่สำเร็จ: ${updateError}`)
+    setVisibilitySaving(false)
+  }
+
   return <section className="content-section page-section dashboard-page">
     <PageHeader eyebrow="ADMIN CONTROL CENTER" title="SYSTEM" accent="DASHBOARD">จัดการโปรเจกต์ ข้อความ ผู้ใช้ และตรวจสอบการทำงานของระบบ</PageHeader>
 
     <div className="dashboard-topbar">
       <span><span className="online-dot" /> SUPABASE CONNECTED · RLS ACTIVE</span>
-      <button className="icon-button" onClick={() => void load()} title="รีเฟรช" disabled={loading}><RefreshCcw className={loading ? 'spin-icon' : ''} size={17} /></button>
+      <button className="icon-button" onClick={() => { void load(); void refreshVisibility() }} title="รีเฟรช" disabled={loading}><RefreshCcw className={loading ? 'spin-icon' : ''} size={17} /></button>
     </div>
 
     {error && <div className="notice error dashboard-notice"><X size={17} />{error}</div>}
+
+    <section className={`projects-visibility-control ${projectsMaintenance ? 'is-maintenance' : 'is-live'}`} aria-label="สถานะหน้าโปรเจกต์">
+      <div className="projects-visibility-icon"><Power size={21} aria-hidden="true" /></div>
+      <div className="projects-visibility-copy">
+        <span>PROJECTS VISIBILITY</span>
+        <h2>{visibilityLoading ? 'กำลังตรวจสถานะ…' : projectsMaintenance ? 'ปิดหน้าโปรเจกต์เพื่ออัปเดต' : 'หน้าโปรเจกต์เปิดให้ชมแล้ว'}</h2>
+        <p>{projectsMaintenance ? 'ผู้ชมทั่วไปเห็นหน้าแจ้งอัปเดต ส่วนแอดมินยังจัดการโพสต์ได้' : 'ผู้ชมทั่วไปเปิดดูผลงานและลิงก์ตรงของแต่ละโปรเจกต์ได้'}</p>
+        {visibilityError && <p className="projects-visibility-error">อ่านสถานะไม่สำเร็จ: {visibilityError} <button type="button" onClick={() => void refreshVisibility()}>ลองใหม่</button></p>}
+      </div>
+      <button className="button small projects-visibility-button" type="button" aria-pressed={!projectsMaintenance} disabled={visibilityLoading || visibilitySaving || Boolean(visibilityError)} onClick={() => void toggleProjectsMaintenance()}>
+        <Power size={16} aria-hidden="true" />{visibilitySaving ? 'กำลังบันทึก…' : projectsMaintenance ? 'เปิดให้ชม' : 'ปิดเพื่ออัปเดต'}
+      </button>
+    </section>
 
     <div className="stats-grid dashboard-stats">
       <button onClick={() => setTab('projects')} className="stat-card"><i className="purple"><FolderOpen /></i><div><b>{loading ? '—' : projects.length}</b><span>PROJECTS</span></div></button>

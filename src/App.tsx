@@ -4,6 +4,7 @@ import { Layout } from './components/Layout'
 import { Loading } from './components/Loading'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
+import { ProjectsVisibilityProvider } from './context/ProjectsVisibilityContext'
 
 const HomePage = lazy(() => import('./pages/HomePage').then((module) => ({ default: module.HomePage })))
 const AboutPage = lazy(() => import('./pages/AboutPage').then((module) => ({ default: module.AboutPage })))
@@ -28,7 +29,7 @@ function ScrollToTop() {
 }
 
 export default function App() {
-  return <BrowserRouter><ScrollToTop /><AuthProvider><Layout><Suspense fallback={<Loading />}><Routes>
+  return <BrowserRouter><ScrollToTop /><AuthProvider><ProjectsVisibilityProvider><Layout><Suspense fallback={<Loading />}><Routes>
     <Route path="/" element={<HomePage />} />
     <Route path="/about" element={<AboutPage />} />
     <Route path="/projects" element={<ProjectsPage />} />
@@ -43,5 +44,5 @@ export default function App() {
     <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
     <Route path="/dashboard" element={<ProtectedRoute admin><DashboardPage /></ProtectedRoute>} />
     <Route path="*" element={<HomePage />} />
-  </Routes></Suspense></Layout></AuthProvider></BrowserRouter>
+  </Routes></Suspense></Layout></ProjectsVisibilityProvider></AuthProvider></BrowserRouter>
 }

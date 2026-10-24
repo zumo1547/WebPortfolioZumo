@@ -36,7 +36,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 import { Seo } from '../components/Seo'
 import { useAuth } from '../context/AuthContext'
-import siteStatus from '../config/siteStatus.json'
+import { useProjectsVisibility } from '../context/ProjectsVisibilityContext'
 import { projectTags } from '../data'
 import { MAX_PROJECT_IMAGE_BYTES, optimizeProjectImage, PROJECT_IMAGE_ACCEPT } from '../lib/imageOptimization'
 import { sortProjectsByImportance } from '../lib/projectRanking'
@@ -151,6 +151,7 @@ function LinkButtons({ links, compact = false, onClick }: { links: ProjectLinks;
 
 export function ProjectsPage() {
   const { user, isAdmin, loading: authLoading } = useAuth()
+  const { maintenance: projectsMaintenance, loading: visibilityLoading } = useProjectsVisibility()
   const navigate = useNavigate()
   const location = useLocation()
   const { slug } = useParams<{ slug?: string }>()
@@ -179,15 +180,15 @@ export function ProjectsPage() {
   }
 
   useEffect(() => {
-    if (authLoading) return
-    if (siteStatus.projectsMaintenance && !isAdmin) {
+    if (authLoading || visibilityLoading) return
+    if (projectsMaintenance && !isAdmin) {
       setProjects([])
       setLoadError(false)
       setLoading(false)
       return
     }
     void loadProjects()
-  }, [authLoading, isAdmin])
+  }, [authLoading, visibilityLoading, projectsMaintenance, isAdmin])
 
   useEffect(() => {
     if (!slug) {
@@ -228,11 +229,11 @@ export function ProjectsPage() {
   const selectedPath = selected ? `/projects/${projectSlug(selected)}` : '/projects'
   const selectedDescription = selected ? stripDescriptionFormatting(selected.description).replace(/\s+/g, ' ').slice(0, 155) : 'รวมผลงาน Game, IoT, Robotics, AI และ Web Development ของ Wutthipat Sriyangnok'
 
-  if (siteStatus.projectsMaintenance && authLoading) {
+  if (authLoading || visibilityLoading) {
     return <section className="content-section page-section projects-page"><div className="projects-auth-check" role="status">กำลังตรวจสอบสิทธิ์การเข้าชม…</div></section>
   }
 
-  if (siteStatus.projectsMaintenance && !isAdmin) {
+  if (projectsMaintenance && !isAdmin) {
     return <section className="content-section page-section projects-page">
       <Seo title="กำลังอัปเดตผลงาน — Wutthipat Sriyangnok" description="หน้าโปรเจกต์กำลังอัปเดตและจะกลับมาให้ชมเร็ว ๆ นี้" path={slug ? `/projects/${slug}` : '/projects'} robots="noindex,follow" />
       <PageHeader eyebrow="PROJECT ARCHIVE" title="MY" accent="PROJECTS">ผลงานด้าน Game, IoT, Robotics, AI และ Web Development</PageHeader>

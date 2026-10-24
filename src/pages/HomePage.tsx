@@ -23,7 +23,7 @@ import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Seo } from '../components/Seo'
 import { useAuth } from '../context/AuthContext'
-import siteStatus from '../config/siteStatus.json'
+import { useProjectsVisibility } from '../context/ProjectsVisibilityContext'
 import { techStack } from '../data'
 import { sortProjectsByImportance } from '../lib/projectRanking'
 import { assetUrl, projectImageUrl, supabase } from '../lib/supabase'
@@ -132,19 +132,22 @@ function ProjectSlideBackdrop({ projects }: { projects: Project[] }) {
 
 export function HomePage() {
   const { isAdmin, loading: authLoading } = useAuth()
+  const { maintenance: projectsMaintenance, loading: visibilityLoading } = useProjectsVisibility()
   const [projects, setProjects] = useState<Project[]>([])
   const [projectsLoading, setProjectsLoading] = useState(true)
   const [projectsError, setProjectsError] = useState(false)
 
   useEffect(() => {
-    if (authLoading) return
-    if (siteStatus.projectsMaintenance && !isAdmin) {
+    if (authLoading || visibilityLoading) return
+    if (projectsMaintenance && !isAdmin) {
       setProjects([])
+      setProjectsError(false)
       setProjectsLoading(false)
       return
     }
     let active = true
     async function loadProjects() {
+      setProjectsLoading(true)
       const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false })
       if (!active) return
       setProjectsError(Boolean(error))
@@ -153,7 +156,7 @@ export function HomePage() {
     }
     void loadProjects()
     return () => { active = false }
-  }, [authLoading, isAdmin])
+  }, [authLoading, visibilityLoading, projectsMaintenance, isAdmin])
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>('.home-reveal')
@@ -257,8 +260,8 @@ export function HomePage() {
               <a href="https://github.com/zumo1547/WebPortfolioZumo" target="_blank" rel="noopener noreferrer"><Github size={14} /> GitHub</a>
             </div>
           </div>
-          <div className="applied-project-heading"><span>PROJECT ARCHIVE</span><small>{siteStatus.projectsMaintenance && !isAdmin ? 'กำลังอัปเดต' : projectsLoading ? 'กำลังโหลด...' : `${projects.length} โปรเจกต์ · เลื่อนดูได้`}</small></div>
-          {siteStatus.projectsMaintenance && !isAdmin
+          <div className="applied-project-heading"><span>PROJECT ARCHIVE</span><small>{projectsMaintenance && !isAdmin ? 'กำลังอัปเดต' : projectsLoading ? 'กำลังโหลด...' : `${projects.length} โปรเจกต์ · เลื่อนดูได้`}</small></div>
+          {projectsMaintenance && !isAdmin
             ? <div className="applied-project-maintenance"><strong>กำลังอัปเดตผลงาน</strong><p>หน้าโปรเจกต์ปิดให้ชมชั่วคราว และจะพร้อมใช้งานเร็ว ๆ นี้</p><Link to="/projects">ดูสถานะหน้าโปรเจกต์ <ArrowRight size={15} /></Link></div>
             : <div className="applied-project-list" tabIndex={0} aria-label="รายการโปรเจกต์ เลื่อนดูได้">
             {projects.map((project) => <Link className="applied-project-item" to={`/projects/${projectSlug(project)}`} key={project.id}>

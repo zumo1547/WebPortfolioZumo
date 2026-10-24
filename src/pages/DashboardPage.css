@@ -2,6 +2,17 @@
 .dashboard-topbar { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 15px; }
 .dashboard-topbar > span { color: #4ade80; font: .61rem 'Share Tech Mono'; letter-spacing: .06em; }
 .dashboard-notice { margin-bottom: 15px; }
+.projects-visibility-control { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; padding: 20px; border: 1px solid rgba(52, 211, 153, .24); border-radius: 16px; background: rgba(52, 211, 153, .055); }
+.projects-visibility-control.is-maintenance { border-color: rgba(192, 132, 252, .28); background: rgba(168, 85, 247, .07); }
+.projects-visibility-icon { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border: 1px solid currentColor; border-radius: 12px; color: #6ee7b7; }
+.is-maintenance .projects-visibility-icon { color: #c4a0f8; }
+.projects-visibility-copy { min-width: 0; flex: 1; }
+.projects-visibility-copy > span { color: #7e758c; font: .58rem 'Share Tech Mono', monospace; letter-spacing: .12em; }
+.projects-visibility-copy h2 { margin: 3px 0 2px; color: #eee6f5; font: 700 1rem 'Kanit', sans-serif; }
+.projects-visibility-copy p { margin: 0; color: #a59bad; font-size: .75rem; line-height: 1.6; text-wrap: pretty; }
+.projects-visibility-copy .projects-visibility-error { margin-top: 6px; color: #fca5a5; }
+.projects-visibility-error button { padding: 0; border: 0; background: none; color: inherit; text-decoration: underline; cursor: pointer; }
+.projects-visibility-button { flex: none; }
 .dashboard-stats .stat-card { width: 100%; color: inherit; text-align: left; cursor: pointer; transition: transform .2s, border-color .2s; }
 .dashboard-stats .stat-card:hover { transform: translateY(-3px); border-color: rgba(168,85,247,.38); }
 .dashboard-tabs { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin: 18px 0 12px; padding: 6px; border: 1px solid var(--border); border-radius: 14px; background: rgba(10,7,20,.82); }
@@ -79,6 +90,9 @@
 }
 @media (max-width: 650px) {
   .dashboard-page { padding-inline: 13px; }
+  .projects-visibility-control { align-items: flex-start; flex-wrap: wrap; padding: 16px; }
+  .projects-visibility-copy { flex-basis: calc(100% - 60px); }
+  .projects-visibility-button { width: 100%; }
   .dashboard-tabs { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .admin-project-row { grid-template-columns: 60px minmax(0,1fr); padding: 11px; }
   .admin-project-row > img { width: 60px; height: 48px; }

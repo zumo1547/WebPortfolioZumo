@@ -22,6 +22,13 @@ create table if not exists public.projects (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.site_settings (
+  id text primary key check (id = 'projects'),
+  maintenance boolean not null default true,
+  updated_at timestamptz not null default now()
+);
+insert into public.site_settings(id, maintenance) values ('projects', true) on conflict (id) do nothing;
+
 alter table public.projects add column if not exists slug text;
 alter table public.projects add column if not exists award_type text check (award_type is null or award_type in ('winner', 'runner_up_1', 'runner_up_2', 'gold', 'silver', 'bronze', 'finalist', 'other'));
 alter table public.projects add column if not exists award_title text check (award_title is null or char_length(award_title) between 1 and 100);
@@ -97,6 +104,8 @@ $$;
 
 drop trigger if exists projects_set_updated_at on public.projects;
 create trigger projects_set_updated_at before update on public.projects for each row execute procedure public.set_updated_at();
+drop trigger if exists site_settings_set_updated_at on public.site_settings;
+create trigger site_settings_set_updated_at before update on public.site_settings for each row execute procedure public.set_updated_at();
 
 create or replace function public.audit_admin_change()
 returns trigger
@@ -131,6 +140,8 @@ drop trigger if exists audit_messages_changes on public.contact_messages;
 create trigger audit_messages_changes after update or delete on public.contact_messages for each row execute procedure public.audit_admin_change();
 drop trigger if exists audit_profiles_changes on public.profiles;
 create trigger audit_profiles_changes after update on public.profiles for each row execute procedure public.audit_admin_change();
+drop trigger if exists audit_site_settings_changes on public.site_settings;
+create trigger audit_site_settings_changes after update on public.site_settings for each row execute procedure public.audit_admin_change();
 
 create or replace function public.admin_delete_project(target_project_id bigint)
 returns text[]
@@ -232,6 +243,7 @@ create trigger on_auth_user_created after insert on auth.users for each row exec
 
 alter table public.profiles enable row level security;
 alter table public.projects enable row level security;
+alter table public.site_settings enable row level security;
 alter table public.contact_messages enable row level security;
 alter table public.admin_activity enable row level security;
 alter table public.contact_rate_limits enable row level security;
@@ -243,7 +255,14 @@ create policy "Users update own profile" on public.profiles for update using (id
 
 drop policy if exists "Projects are public" on public.projects;
 drop policy if exists "Admins read projects during maintenance" on public.projects;
-create policy "Admins read projects during maintenance" on public.projects for select using (public.is_admin());
+drop policy if exists "Projects visible when available" on public.projects;
+create policy "Projects visible when available" on public.projects for select using (
+  public.is_admin() or exists (select 1 from public.site_settings where id = 'projects' and not maintenance)
+);
+drop policy if exists "Anyone reads site settings" on public.site_settings;
+create policy "Anyone reads site settings" on public.site_settings for select using (true);
+drop policy if exists "Admins update site settings" on public.site_settings;
+create policy "Admins update site settings" on public.site_settings for update using (public.is_admin()) with check (public.is_admin());
 drop policy if exists "Admins create projects" on public.projects;
 create policy "Admins create projects" on public.projects for insert with check (public.is_admin());
 drop policy if exists "Admins update projects" on public.projects;
@@ -265,6 +284,7 @@ create policy "Admins read activity" on public.admin_activity for select using (
 revoke all on public.profiles from anon;
 revoke update on public.profiles from authenticated;
 revoke insert, update, delete on public.projects from anon;
+revoke all on public.site_settings from anon, authenticated;
 revoke select, update, delete on public.contact_messages from anon;
 revoke all on public.admin_activity from anon, authenticated;
 revoke all on public.contact_rate_limits from anon, authenticated;
@@ -275,6 +295,8 @@ grant select on public.profiles to authenticated;
 grant update(username) on public.profiles to authenticated;
 grant select on public.projects to anon, authenticated;
 grant insert, update, delete on public.projects to authenticated;
+grant select on public.site_settings to anon, authenticated;
+grant update(maintenance) on public.site_settings to authenticated;
 grant usage, select on sequence public.projects_id_seq to authenticated;
 revoke insert on public.contact_messages from anon, authenticated;
 grant select, update, delete on public.contact_messages to authenticated;
@@ -332,6 +354,12 @@ begin
     where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'contact_messages'
   ) then
     alter publication supabase_realtime add table public.contact_messages;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'site_settings'
+  ) then
+    alter publication supabase_realtime add table public.site_settings;
   end if;
 end;
 $$;
