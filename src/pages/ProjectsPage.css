@@ -635,6 +635,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   background: #0b0715;
   scrollbar-width: thin;
   scrollbar-color: #9333ea #0b0715;
@@ -1215,13 +1216,13 @@
   .projects-page .project-body h2 { min-height: 0; font-size: 1.08rem; }
   .projects-page .project-body p { min-height: 0; }
   .projects-page .modal-backdrop { align-items: end; padding: 0; }
-  .projects-page .project-modal { width: 100%; height: 88dvh; max-height: 88dvh; border-radius: 22px 22px 0 0; border-bottom: 0; }
+  .projects-page .project-modal { width: 100%; height: 100dvh; max-height: 100dvh; border: 0; border-radius: 0; }
   .projects-page .editor-modal { width: 100%; height: 94dvh; max-height: 94dvh; border-radius: 22px 22px 0 0; border-bottom: 0; }
   .modal-toolbar { min-height: 66px; padding: 10px 12px 10px 17px; }
   .project-share-button span { display: none; }
   .project-share-button { width: 40px; min-width: 40px; padding: 0; }
   .projects-page .modal-close { width: 42px; height: 42px; }
-  .projects-page .modal-image { height: min(35vh, 300px); }
+  .projects-page .modal-image { height: min(56.25vw, 270px, 32dvh); }
   .gallery-arrow { width: 40px; height: 40px; }
   .gallery-arrow.previous { left: 8px; }
   .gallery-arrow.next { right: 8px; }
