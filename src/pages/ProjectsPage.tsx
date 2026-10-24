@@ -429,7 +429,12 @@ export function ProjectModal({ project, onClose }: { project: Project; onClose: 
         </div>
       </header>
       <div className="project-modal-scroll">
-        <div className="modal-image" onMouseEnter={() => setHoverPaused(true)} onMouseLeave={() => setHoverPaused(false)} onClick={() => setAutoPaused(true)}>
+        <div
+          className="modal-image"
+          onPointerEnter={(event) => { if (event.pointerType === 'mouse') setHoverPaused(true) }}
+          onPointerLeave={(event) => { if (event.pointerType === 'mouse') setHoverPaused(false) }}
+          onClick={() => setAutoPaused(true)}
+        >
           <img
             key={`${images[imageIndex]}-${imageIndex}`}
             src={projectImageUrl(images[imageIndex])}
