@@ -5,6 +5,7 @@ const siteUrl = (process.env.VITE_SITE_URL || 'https://webportfoliozumo.vercel.a
 const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://qywoebwqrtatnaakocav.supabase.co'
 const anonKey = process.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_9SCptqAoBbg6STsvhLhU7Q_sIAgcLOz'
 const distDirectory = resolve('dist')
+const { projectsMaintenance } = JSON.parse(await readFile(resolve('src/config/siteStatus.json'), 'utf8'))
 
 const escapeHtml = (value) => String(value)
   .replaceAll('&', '&amp;')
@@ -50,7 +51,7 @@ const renderProjectHtml = (baseHtml, project) => {
 
 const baseHtml = await readFile(resolve(distDirectory, 'index.html'), 'utf8')
 let projects = []
-try {
+if (!projectsMaintenance) try {
   const response = await fetch(`${supabaseUrl}/rest/v1/projects?select=slug,name,description,images&slug=not.is.null&order=created_at.desc`, {
     headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
     signal: AbortSignal.timeout(12_000),
@@ -61,13 +62,32 @@ try {
   console.warn(`Could not pre-render project metadata: ${error instanceof Error ? error.message : error}`)
 }
 
+if (projectsMaintenance) {
+  const title = 'กำลังอัปเดตผลงาน — Wutthipat Sriyangnok'
+  const description = 'หน้าโปรเจกต์กำลังอัปเดตและจะกลับมาให้ชมเร็ว ๆ นี้'
+  let maintenanceHtml = baseHtml
+  maintenanceHtml = replaceMeta(maintenanceHtml, /<title>.*?<\/title>/s, `<title>${escapeHtml(title)}</title>`)
+  maintenanceHtml = replaceMeta(maintenanceHtml, /<meta name="description"[^>]*>/, `<meta name="description" content="${escapeHtml(description)}" />`)
+  maintenanceHtml = replaceMeta(maintenanceHtml, /<meta name="robots"[^>]*>/, '<meta name="robots" content="noindex,follow" />')
+  maintenanceHtml = replaceMeta(maintenanceHtml, /<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${siteUrl}/projects" />`)
+  for (const [property, content] of [['og:title', title], ['og:description', description], ['og:url', `${siteUrl}/projects`]]) {
+    maintenanceHtml = replaceMeta(maintenanceHtml, new RegExp(`<meta property="${property}"[^>]*>`), `<meta property="${property}" content="${escapeHtml(content)}" />`)
+  }
+  for (const [name, content] of [['twitter:title', title], ['twitter:description', description]]) {
+    maintenanceHtml = replaceMeta(maintenanceHtml, new RegExp(`<meta name="${name}"[^>]*>`), `<meta name="${name}" content="${escapeHtml(content)}" />`)
+  }
+  const directory = resolve(distDirectory, 'projects')
+  await mkdir(directory, { recursive: true })
+  await writeFile(resolve(directory, 'index.html'), maintenanceHtml, 'utf8')
+}
+
 for (const project of projects) {
   const directory = resolve(distDirectory, 'projects', project.slug)
   await mkdir(directory, { recursive: true })
   await writeFile(resolve(directory, 'index.html'), renderProjectHtml(baseHtml, project), 'utf8')
 }
 
-const routes = ['/', '/about', '/projects', '/contact', ...projects.map((project) => `/projects/${project.slug}`)]
+const routes = ['/', '/about', '/contact', ...(!projectsMaintenance ? ['/projects', ...projects.map((project) => `/projects/${project.slug}`)] : [])]
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${routes.map((route, index) => `  <url><loc>${siteUrl}${route}</loc><priority>${index === 0 ? '1.0' : route === '/projects' ? '0.9' : '0.7'}</priority></url>`).join('\n')}\n</urlset>\n`
 await writeFile(resolve(distDirectory, 'sitemap.xml'), sitemap, 'utf8')
 console.log(`Generated social metadata for ${projects.length} project page(s).`)

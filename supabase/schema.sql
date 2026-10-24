@@ -242,7 +242,8 @@ drop policy if exists "Users update own profile" on public.profiles;
 create policy "Users update own profile" on public.profiles for update using (id = auth.uid()) with check (id = auth.uid());
 
 drop policy if exists "Projects are public" on public.projects;
-create policy "Projects are public" on public.projects for select using (true);
+drop policy if exists "Admins read projects during maintenance" on public.projects;
+create policy "Admins read projects during maintenance" on public.projects for select using (public.is_admin());
 drop policy if exists "Admins create projects" on public.projects;
 create policy "Admins create projects" on public.projects for insert with check (public.is_admin());
 drop policy if exists "Admins update projects" on public.projects;

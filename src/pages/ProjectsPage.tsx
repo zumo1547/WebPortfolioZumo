@@ -1,4 +1,5 @@
 import {
+  ArrowRight,
   ChevronLeft,
   ChevronRight,
   ArrowDownWideNarrow,
@@ -24,17 +25,19 @@ import {
   Trash2,
   Trophy,
   Upload,
+  Wrench,
   X,
   Youtube,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 import { Seo } from '../components/Seo'
 import { useAuth } from '../context/AuthContext'
-import { fallbackProjects, projectTags } from '../data'
+import siteStatus from '../config/siteStatus.json'
+import { projectTags } from '../data'
 import { MAX_PROJECT_IMAGE_BYTES, optimizeProjectImage, PROJECT_IMAGE_ACCEPT } from '../lib/imageOptimization'
 import { sortProjectsByImportance } from '../lib/projectRanking'
 import { projectImageUrl, supabase } from '../lib/supabase'
@@ -147,12 +150,13 @@ function LinkButtons({ links, compact = false, onClick }: { links: ProjectLinks;
 }
 
 export function ProjectsPage() {
-  const { user, isAdmin } = useAuth()
+  const { user, isAdmin, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const { slug } = useParams<{ slug?: string }>()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [query, setQuery] = useState('')
   const [activeTags, setActiveTags] = useState<string[]>([])
   const [selected, setSelected] = useState<Project | null>(null)
@@ -169,11 +173,21 @@ export function ProjectsPage() {
   const loadProjects = async () => {
     setLoading(true)
     const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false })
-    setProjects(sortProjectsByImportance(error ? fallbackProjects : (data as Project[] || [])))
+    setLoadError(Boolean(error))
+    setProjects(sortProjectsByImportance(error ? [] : (data as Project[] || [])))
     setLoading(false)
   }
 
-  useEffect(() => { void loadProjects() }, [])
+  useEffect(() => {
+    if (authLoading) return
+    if (siteStatus.projectsMaintenance && !isAdmin) {
+      setProjects([])
+      setLoadError(false)
+      setLoading(false)
+      return
+    }
+    void loadProjects()
+  }, [authLoading, isAdmin])
 
   useEffect(() => {
     if (!slug) {
@@ -214,6 +228,28 @@ export function ProjectsPage() {
   const selectedPath = selected ? `/projects/${projectSlug(selected)}` : '/projects'
   const selectedDescription = selected ? stripDescriptionFormatting(selected.description).replace(/\s+/g, ' ').slice(0, 155) : 'รวมผลงาน Game, IoT, Robotics, AI และ Web Development ของ Wutthipat Sriyangnok'
 
+  if (siteStatus.projectsMaintenance && authLoading) {
+    return <section className="content-section page-section projects-page"><div className="projects-auth-check" role="status">กำลังตรวจสอบสิทธิ์การเข้าชม…</div></section>
+  }
+
+  if (siteStatus.projectsMaintenance && !isAdmin) {
+    return <section className="content-section page-section projects-page">
+      <Seo title="กำลังอัปเดตผลงาน — Wutthipat Sriyangnok" description="หน้าโปรเจกต์กำลังอัปเดตและจะกลับมาให้ชมเร็ว ๆ นี้" path={slug ? `/projects/${slug}` : '/projects'} robots="noindex,follow" />
+      <PageHeader eyebrow="PROJECT ARCHIVE" title="MY" accent="PROJECTS">ผลงานด้าน Game, IoT, Robotics, AI และ Web Development</PageHeader>
+      <div className="projects-maintenance" role="status" aria-live="polite">
+        <div className="projects-maintenance-mark"><Wrench size={29} strokeWidth={1.65} aria-hidden="true" /></div>
+        <span className="projects-maintenance-label"><span className="online-dot" /> PROJECTS UPDATE</span>
+        <h2>กำลังอัปเดตผลงาน</h2>
+        <p>ตอนนี้กำลังตรวจและจัดเรียงข้อมูลโปรเจกต์ หน้าแสดงผลงานจึงปิดให้ชมชั่วคราว</p>
+        <strong>พร้อมใช้งานเร็ว ๆ นี้</strong>
+        <div className="projects-maintenance-actions">
+          <Link className="button secondary" to="/">กลับหน้าแรก <ArrowRight size={17} /></Link>
+          <Link className="projects-maintenance-login" to="/login">เข้าสู่ระบบสำหรับแอดมิน</Link>
+        </div>
+      </div>
+    </section>
+  }
+
   return (
     <section className="content-section page-section projects-page">
       <Seo
@@ -224,6 +260,8 @@ export function ProjectsPage() {
         type={selected ? 'article' : 'website'}
       />
       <PageHeader eyebrow="PROJECT ARCHIVE" title="MY" accent="PROJECTS">ผลงานด้าน Game, IoT, Robotics, AI และ Web Development</PageHeader>
+
+      {loadError && <div className="projects-load-error" role="alert">เชื่อมต่อข้อมูลโปรเจกต์ไม่สำเร็จ โพสต์เดิมยังไม่ได้ถูกลบ <button type="button" onClick={() => void loadProjects()}>ลองโหลดอีกครั้ง</button></div>}
 
       <div className="project-controls reveal">
         <div className="project-toolbar">
@@ -279,7 +317,7 @@ export function ProjectsPage() {
         ))}
       </div>}
 
-      {!loading && !visible.length && <div className="empty-state"><Search size={32} /><h2>ไม่พบโปรเจกต์ที่ค้นหา</h2><p>ลองเปลี่ยนคำค้นหาหรือเลือกแท็กอื่น</p><button className="button secondary small" onClick={clearFilters}>ล้างตัวกรอง</button></div>}
+      {!loading && !loadError && !visible.length && <div className="empty-state"><Search size={32} /><h2>ไม่พบโปรเจกต์ที่ค้นหา</h2><p>ลองเปลี่ยนคำค้นหาหรือเลือกแท็กอื่น</p><button className="button secondary small" onClick={clearFilters}>ล้างตัวกรอง</button></div>}
 
       {selected && createPortal(<div className="projects-page modal-portal"><ProjectModal key={selected.id} project={selected} onClose={closeSelected} /></div>, document.body)}
       {editing && isAdmin && user && createPortal(<div className="projects-page modal-portal"><ProjectEditor project={editing === 'new' ? null : editing} userId={user.id} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); void loadProjects() }} /></div>, document.body)}

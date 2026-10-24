@@ -22,7 +22,9 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Seo } from '../components/Seo'
-import { fallbackProjects, techStack } from '../data'
+import { useAuth } from '../context/AuthContext'
+import siteStatus from '../config/siteStatus.json'
+import { techStack } from '../data'
 import { sortProjectsByImportance } from '../lib/projectRanking'
 import { assetUrl, projectImageUrl, supabase } from '../lib/supabase'
 import type { Project } from '../types'
@@ -129,20 +131,29 @@ function ProjectSlideBackdrop({ projects }: { projects: Project[] }) {
 }
 
 export function HomePage() {
+  const { isAdmin, loading: authLoading } = useAuth()
   const [projects, setProjects] = useState<Project[]>([])
   const [projectsLoading, setProjectsLoading] = useState(true)
+  const [projectsError, setProjectsError] = useState(false)
 
   useEffect(() => {
+    if (authLoading) return
+    if (siteStatus.projectsMaintenance && !isAdmin) {
+      setProjects([])
+      setProjectsLoading(false)
+      return
+    }
     let active = true
     async function loadProjects() {
       const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false })
       if (!active) return
-      setProjects(sortProjectsByImportance(error ? fallbackProjects : ((data as Project[]) || [])))
+      setProjectsError(Boolean(error))
+      setProjects(sortProjectsByImportance(error ? [] : ((data as Project[]) || [])))
       setProjectsLoading(false)
     }
     void loadProjects()
     return () => { active = false }
-  }, [])
+  }, [authLoading, isAdmin])
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>('.home-reveal')
@@ -246,15 +257,18 @@ export function HomePage() {
               <a href="https://github.com/zumo1547/WebPortfolioZumo" target="_blank" rel="noopener noreferrer"><Github size={14} /> GitHub</a>
             </div>
           </div>
-          <div className="applied-project-heading"><span>PROJECT ARCHIVE</span><small>{projectsLoading ? 'กำลังโหลด...' : `${projects.length} โปรเจกต์ · เลื่อนดูได้`}</small></div>
-          <div className="applied-project-list" tabIndex={0} aria-label="รายการโปรเจกต์ เลื่อนดูได้">
+          <div className="applied-project-heading"><span>PROJECT ARCHIVE</span><small>{siteStatus.projectsMaintenance && !isAdmin ? 'กำลังอัปเดต' : projectsLoading ? 'กำลังโหลด...' : `${projects.length} โปรเจกต์ · เลื่อนดูได้`}</small></div>
+          {siteStatus.projectsMaintenance && !isAdmin
+            ? <div className="applied-project-maintenance"><strong>กำลังอัปเดตผลงาน</strong><p>หน้าโปรเจกต์ปิดให้ชมชั่วคราว และจะพร้อมใช้งานเร็ว ๆ นี้</p><Link to="/projects">ดูสถานะหน้าโปรเจกต์ <ArrowRight size={15} /></Link></div>
+            : <div className="applied-project-list" tabIndex={0} aria-label="รายการโปรเจกต์ เลื่อนดูได้">
             {projects.map((project) => <Link className="applied-project-item" to={`/projects/${projectSlug(project)}`} key={project.id}>
               <img src={projectImageUrl(project.images?.[0])} alt="" loading="lazy" />
               <span className="applied-project-copy"><b>{project.name}</b><small>{projectSummary(project.description)}</small></span>
               <ArrowRight size={16} aria-hidden="true" />
             </Link>)}
-            {!projectsLoading && projects.length === 0 && <p className="applied-project-empty">ยังไม่มีโปรเจกต์ในคลังผลงาน</p>}
-          </div>
+            {!projectsLoading && projectsError && <p className="applied-project-empty">เชื่อมต่อข้อมูลโปรเจกต์ไม่สำเร็จ กรุณาลองใหม่ภายหลัง</p>}
+            {!projectsLoading && !projectsError && projects.length === 0 && <p className="applied-project-empty">ยังไม่มีโปรเจกต์ในคลังผลงาน</p>}
+          </div>}
         </article>
 
         <article className="feature-card project-callout home-reveal">

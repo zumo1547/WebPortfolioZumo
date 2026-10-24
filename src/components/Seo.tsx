@@ -18,12 +18,14 @@ export function Seo({
   path = '/',
   image = '/assets/og-portfolio.png',
   type = 'website',
+  robots = 'index,follow',
 }: {
   title: string
   description: string
   path?: string
   image?: string
   type?: 'website' | 'article'
+  robots?: string
 }) {
   useEffect(() => {
     const canonicalUrl = new URL(path, SITE_URL).toString()
@@ -39,6 +41,7 @@ export function Seo({
     canonical.href = canonicalUrl
 
     setMeta('meta[name="description"]', 'name', 'description', description)
+    setMeta('meta[name="robots"]', 'name', 'robots', robots)
     setMeta('meta[property="og:title"]', 'property', 'og:title', title)
     setMeta('meta[property="og:description"]', 'property', 'og:description', description)
     setMeta('meta[property="og:type"]', 'property', 'og:type', type)
@@ -53,7 +56,7 @@ export function Seo({
     setMeta('meta[name="twitter:description"]', 'name', 'twitter:description', description)
     setMeta('meta[name="twitter:image"]', 'name', 'twitter:image', imageUrl)
     setMeta('meta[name="twitter:image:alt"]', 'name', 'twitter:image:alt', title)
-  }, [description, image, path, title, type])
+  }, [description, image, path, robots, title, type])
 
   return null
 }
