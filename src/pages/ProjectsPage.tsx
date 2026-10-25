@@ -7,12 +7,15 @@ import {
   ExternalLink,
   Github,
   Globe2,
+  GripVertical,
   GraduationCap,
   ImagePlus,
   Images,
   Landmark,
   Link2,
   Monitor,
+  MoveDown,
+  MoveUp,
   Pencil,
   Pause,
   Play,
@@ -31,7 +34,7 @@ import {
   Youtube,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react'
+import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
@@ -40,7 +43,7 @@ import { useAuth } from '../context/AuthContext'
 import { useProjectsVisibility } from '../context/ProjectsVisibilityContext'
 import { projectTags } from '../data'
 import { MAX_PROJECT_IMAGE_BYTES, optimizeProjectImage, PROJECT_IMAGE_ACCEPT } from '../lib/imageOptimization'
-import { sortProjectsByImportance } from '../lib/projectRanking'
+import { activityGroupForProject, reorderActivityProjects, sortProjectsByImportance } from '../lib/projectRanking'
 import { projectImageUrl, supabase } from '../lib/supabase'
 import type { AwardType, Project, ProjectInput, ProjectLinks } from '../types'
 import './ProjectsPage.css'
@@ -167,6 +170,22 @@ export function ProjectsPage() {
   const [selected, setSelected] = useState<Project | null>(null)
   const [editing, setEditing] = useState<Project | null | 'new'>(null)
   const [deleting, setDeleting] = useState<Project | null>(null)
+  const [desktopReorder, setDesktopReorder] = useState(false)
+  const [reorderBusy, setReorderBusy] = useState(false)
+  const [reorderMessage, setReorderMessage] = useState('')
+  const [reorderError, setReorderError] = useState('')
+  const [draggingId, setDraggingId] = useState<number | null>(null)
+  const [dropTargetId, setDropTargetId] = useState<number | null>(null)
+  const draggedIdRef = useRef<number | null>(null)
+  const reorderBusyRef = useRef(false)
+
+  useEffect(() => {
+    const media = window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 621px)')
+    const update = () => setDesktopReorder(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
 
   const closeSelected = useCallback(() => {
     setSelected(null)
@@ -221,6 +240,8 @@ export function ProjectsPage() {
   }, [selected, editing, deleting, closeSelected])
 
   const normalizedQuery = query.trim().toLocaleLowerCase('th')
+  const reorderFilterReady = activeTags.length === 0 || (activeTags.length === 1 && activityTags.includes(activeTags[0]))
+  const reorderAvailable = isAdmin && desktopReorder && !normalizedQuery && reorderFilterReady
   const visible = useMemo(() => projects.filter((project) => {
     const searchable = `${project.name} ${project.description} ${project.award_title || ''} ${(project.tags || []).join(' ')}`.toLocaleLowerCase('th')
     const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery)
@@ -230,6 +251,58 @@ export function ProjectsPage() {
 
   const toggleTag = (tag: string) => setActiveTags((current) => current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag])
   const clearFilters = () => { setQuery(''); setActiveTags([]) }
+  const resetDrag = () => { draggedIdRef.current = null; setDraggingId(null); setDropTargetId(null) }
+
+  const moveActivityProject = async (sourceId: number, targetId: number) => {
+    if (!reorderAvailable || reorderBusyRef.current) return
+    const next = reorderActivityProjects(projects, sourceId, targetId)
+    if (!next) return
+
+    reorderBusyRef.current = true
+    setReorderBusy(true)
+    setReorderError('')
+    setReorderMessage('กำลังบันทึกลำดับ...')
+    setProjects(next.projects)
+    try {
+      const { error } = await supabase.rpc('admin_reorder_activity_projects', { activity_group: next.group, ordered_ids: next.orderedIds })
+      if (error) throw error
+      setReorderMessage('บันทึกลำดับแล้ว')
+    } catch {
+      setProjects(projects)
+      setReorderError('บันทึกลำดับไม่สำเร็จ กรุณาโหลดหน้าใหม่แล้วลองอีกครั้ง')
+      setReorderMessage('')
+    } finally {
+      reorderBusyRef.current = false
+      setReorderBusy(false)
+    }
+  }
+
+  const startDrag = (event: DragEvent<HTMLElement>, projectId: number) => {
+    if (!reorderAvailable || reorderBusy) { event.preventDefault(); return }
+    const target = event.target as Element
+    if (target.closest('.project-card-actions, .project-reorder-controls button:not(.reorder-grip)')) { event.preventDefault(); return }
+    draggedIdRef.current = projectId
+    setDraggingId(projectId)
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', String(projectId))
+    event.dataTransfer.setDragImage(event.currentTarget, 32, 32)
+  }
+
+  const dragOverCard = (event: DragEvent<HTMLElement>, target: Project) => {
+    const source = projects.find((project) => project.id === draggedIdRef.current)
+    if (!reorderAvailable || reorderBusy || !source || source.id === target.id || !activityGroupForProject(source) || activityGroupForProject(source) !== activityGroupForProject(target)) return
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'move'
+    if (dropTargetId !== target.id) setDropTargetId(target.id)
+  }
+
+  const dropOnCard = (event: DragEvent<HTMLElement>, targetId: number) => {
+    const sourceId = draggedIdRef.current
+    resetDrag()
+    if (sourceId === null) return
+    event.preventDefault()
+    void moveActivityProject(sourceId, targetId)
+  }
   const selectedPath = selected ? `/projects/${projectSlug(selected)}` : '/projects'
   const selectedDescription = selected ? stripDescriptionFormatting(selected.description).replace(/\s+/g, ' ').slice(0, 155) : 'รวมผลงาน Game, IoT, Robotics, AI และ Web Development ของ Wutthipat Sriyangnok'
 
@@ -291,19 +364,25 @@ export function ProjectsPage() {
           <div className="result-count" aria-live="polite">{loading ? 'กำลังโหลดผลงาน...' : `แสดง ${visible.length} จาก ${projects.length} โปรเจกต์`}</div>
           <span><ArrowDownWideNarrow size={13} /> เรียงตามระดับ รางวัล และลำดับกิจกรรม</span>
         </div>
+        {isAdmin && desktopReorder && <div className="reorder-admin-hint"><GripVertical size={14} aria-hidden="true" />{reorderAvailable ? 'จัดลำดับกิจกรรม: กดค้างแล้วลากการ์ด หรือกดลูกศรด้านข้าง' : 'ล้างคำค้นหาและเลือกตัวกรองกิจกรรมได้ครั้งละหนึ่งกลุ่มเพื่อจัดลำดับ'}</div>}
+        {(reorderMessage || reorderError) && <div className={`reorder-feedback ${reorderError ? 'error' : ''}`} role={reorderError ? 'alert' : 'status'}>{reorderError || reorderMessage}</div>}
       </div>
 
       {loading ? <div className="project-grid project-skeleton-grid" aria-label="กำลังโหลด">
         {Array.from({ length: 8 }, (_, index) => <div className="project-skeleton" key={index}><i /><span /><b /></div>)}
       </div> : <div className="project-grid">
-        {visible.map((project, index) => (
-          <article className="project-card reveal" style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }} key={project.id}>
+        {visible.map((project, index) => {
+          const group = activityGroupForProject(project)
+          const members = group ? projects.filter((item) => activityGroupForProject(item) === group) : []
+          const position = members.findIndex((item) => item.id === project.id)
+          const canMove = reorderAvailable && group && project.id > 0 && members.length > 1
+          return <article className={`project-card reveal ${draggingId === project.id ? 'is-dragging' : ''} ${dropTargetId === project.id ? 'is-drop-target' : ''}`} style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }} key={project.id} draggable={Boolean(canMove) && !reorderBusy} onDragStart={(event) => startDrag(event, project.id)} onDragEnd={resetDrag} onDragOver={(event) => dragOverCard(event, project)} onDrop={(event) => dropOnCard(event, project.id)}>
             <button className="project-card-open" onClick={() => {
               setSelected(project)
               void navigate(`/projects/${projectSlug(project)}`, { state: { projectOverlay: true } })
             }} aria-label={`เปิดรายละเอียด ${project.name}`}>
               <div className="project-cover">
-                <img src={projectImageUrl(project.images?.[0])} alt={project.name} loading="lazy" />
+                <img src={projectImageUrl(project.images?.[0])} alt={project.name} loading="lazy" draggable={false} />
                 <span className="project-cover-shade" />
                 {project.images?.length > 1 && <span className="image-count"><Images size={14} /> {project.images.length}</span>}
               </div>
@@ -318,8 +397,14 @@ export function ProjectsPage() {
               <LinkButtons compact links={project.links || {}} onClick={(event) => event.stopPropagation()} />
               {isAdmin && project.id > 0 && <><button className="edit-pill" onClick={(event) => { event.stopPropagation(); setSelected(null); setEditing(project) }}><Pencil size={14} /> แก้ไข</button><button className="delete-pill" onClick={(event) => { event.stopPropagation(); setSelected(null); setDeleting(project) }} aria-label={`ลบ ${project.name}`} title="ลบโปรเจกต์"><Trash2 size={14} /></button></>}
             </div>
+            {canMove && <div className="project-reorder-controls" aria-label={`จัดลำดับ ${project.name}`}>
+              <button type="button" className="reorder-grip" disabled={reorderBusy} aria-label={`กดค้างแล้วลาก ${project.name} เพื่อเปลี่ยนลำดับ`} title="กดค้างแล้วลากไปวางที่กิจกรรมในกลุ่มเดียวกัน"><GripVertical size={17} /></button>
+              <span className="reorder-position">{position + 1}</span>
+              <button type="button" disabled={reorderBusy || position === 0} onClick={() => void moveActivityProject(project.id, members[position - 1].id)} aria-label={`เลื่อน ${project.name} ขึ้นหนึ่งอันดับ`} title="เลื่อนขึ้น"><MoveUp size={16} /></button>
+              <button type="button" disabled={reorderBusy || position === members.length - 1} onClick={() => void moveActivityProject(project.id, members[position + 1].id)} aria-label={`เลื่อน ${project.name} ลงหนึ่งอันดับ`} title="เลื่อนลง"><MoveDown size={16} /></button>
+            </div>}
           </article>
-        ))}
+        })}
       </div>}
 
       {!loading && !loadError && !visible.length && <div className="empty-state"><Search size={32} /><h2>ไม่พบโปรเจกต์ที่ค้นหา</h2><p>ลองเปลี่ยนคำค้นหาหรือเลือกแท็กอื่น</p><button className="button secondary small" onClick={clearFilters}>ล้างตัวกรอง</button></div>}

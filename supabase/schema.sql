@@ -171,6 +171,49 @@ begin
 end;
 $$;
 
+create or replace function public.admin_reorder_activity_projects(activity_group text, ordered_ids bigint[])
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  expected_ids bigint[];
+  supplied_ids bigint[];
+begin
+  if not public.is_admin() then
+    raise exception 'Admin permission required' using errcode = '42501';
+  end if;
+  if activity_group not in ('university', 'general') or ordered_ids is null or cardinality(ordered_ids) = 0 or cardinality(ordered_ids) > 9999 then
+    raise exception 'Invalid activity order' using errcode = '22023';
+  end if;
+
+  lock table public.projects in share row exclusive mode;
+
+  select coalesce(array_agg(p.id order by p.id), array[]::bigint[])
+  into expected_ids
+  from public.projects p
+  where not (p.tags && array['ระดับนานาชาติ', 'ระดับประเทศ', 'ระดับจังหวัด', 'งานในโรงเรียน']::text[])
+    and case
+      when activity_group = 'university' then 'กิจกรรมเข้าร่วมมหาวิทยาลัย' = any(p.tags)
+      else 'เข้าร่วมกิจกรรม' = any(p.tags) and not 'กิจกรรมเข้าร่วมมหาวิทยาลัย' = any(p.tags)
+    end;
+
+  select coalesce(array_agg(project_id order by project_id), array[]::bigint[])
+  into supplied_ids
+  from unnest(ordered_ids) as supplied(project_id);
+
+  if cardinality(ordered_ids) <> cardinality(expected_ids) or supplied_ids <> expected_ids then
+    raise exception 'Activity list changed. Reload and try again.' using errcode = '22023';
+  end if;
+
+  update public.projects p
+  set activity_order = ordering.position::integer
+  from unnest(ordered_ids) with ordinality as ordering(project_id, position)
+  where p.id = ordering.project_id;
+end;
+$$;
+
 create or replace function public.admin_set_user_role(target_user_id uuid, next_role text)
 returns void
 language plpgsql
@@ -291,6 +334,7 @@ revoke select, update, delete on public.contact_messages from anon;
 revoke all on public.admin_activity from anon, authenticated;
 revoke all on public.contact_rate_limits from anon, authenticated;
 revoke all on function public.admin_delete_project(bigint) from public;
+revoke all on function public.admin_reorder_activity_projects(text, bigint[]) from public;
 revoke all on function public.admin_set_user_role(uuid, text) from public;
 revoke all on function public.server_submit_contact_message(text, text, text, text, text) from public;
 grant select on public.profiles to authenticated;
@@ -306,6 +350,8 @@ grant usage, select on sequence public.contact_messages_id_seq to anon, authenti
 grant select on public.admin_activity to authenticated;
 grant usage, select on sequence public.admin_activity_id_seq to authenticated;
 grant execute on function public.admin_delete_project(bigint) to authenticated;
+grant execute on function public.admin_reorder_activity_projects(text, bigint[]) to authenticated;
+notify pgrst, 'reload schema';
 grant execute on function public.admin_set_user_role(uuid, text) to authenticated;
 grant execute on function public.server_submit_contact_message(text, text, text, text, text) to service_role;
 

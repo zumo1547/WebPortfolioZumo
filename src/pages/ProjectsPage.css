@@ -285,6 +285,59 @@
   opacity: 1;
 }
 
+.projects-page .project-card.is-dragging { opacity: .5; }
+.projects-page .project-card.is-drop-target { outline: 2px solid #22d3ee; outline-offset: 3px; }
+
+.reorder-admin-hint,
+.reorder-feedback {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 9px;
+  color: #9ca3af;
+  font-size: .72rem;
+}
+.reorder-admin-hint svg { color: #67e8f9; }
+.reorder-feedback { color: #86efac; }
+.reorder-feedback.error { color: #fca5a5; }
+
+.project-reorder-controls {
+  position: absolute;
+  z-index: 4;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  width: 40px;
+  padding: 5px 3px;
+  border: 1px solid rgba(103, 232, 249, .35);
+  border-radius: 12px;
+  background: rgba(7, 10, 22, .88);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+}
+.project-reorder-controls button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #a5f3fc;
+  cursor: pointer;
+}
+.project-reorder-controls button:hover:not(:disabled),
+.project-reorder-controls button:focus-visible { background: rgba(34, 211, 238, .2); color: white; }
+.project-reorder-controls button:focus-visible { outline: 2px solid #67e8f9; }
+.project-reorder-controls button:disabled { opacity: .3; cursor: not-allowed; }
+.project-reorder-controls .reorder-grip { cursor: grab; }
+.project-reorder-controls .reorder-grip:active { cursor: grabbing; }
+.reorder-position { color: #a5f3fc; font: 700 .64rem 'Share Tech Mono'; }
+
 .project-card-open {
   width: 100%;
   height: 100%;
@@ -1289,6 +1342,11 @@
   .projects-page .project-tag { font-size: .58rem; }
   .projects-page .editor-actions { flex-direction: column-reverse; }
   .projects-page .editor-actions .button { width: 100%; }
+}
+
+@media (hover: none), (pointer: coarse), (max-width: 620px) {
+  .project-reorder-controls,
+  .reorder-admin-hint { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
