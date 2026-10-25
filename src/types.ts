@@ -26,6 +26,7 @@ export interface Project {
   award_type: AwardType | null
   award_title: string | null
   award_rank: number | null
+  activity_order: number | null
   created_at: string
   updated_at: string
 }
@@ -40,6 +41,7 @@ export interface ProjectInput {
   award_type: AwardType | null
   award_title: string | null
   award_rank: number | null
+  activity_order: number | null
 }
 
 export interface ContactMessage {

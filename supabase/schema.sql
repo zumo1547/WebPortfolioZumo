@@ -17,6 +17,7 @@ create table if not exists public.projects (
   description text not null default '',
   images jsonb not null default '[]'::jsonb check (jsonb_typeof(images) = 'array'),
   tags text[] not null default array['งานในโรงเรียน']::text[],
+  activity_order integer check (activity_order is null or activity_order between 1 and 9999),
   links jsonb not null default '{}'::jsonb check (jsonb_typeof(links) = 'object'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -30,6 +31,7 @@ create table if not exists public.site_settings (
 insert into public.site_settings(id, maintenance) values ('projects', true) on conflict (id) do nothing;
 
 alter table public.projects add column if not exists slug text;
+alter table public.projects add column if not exists activity_order integer check (activity_order is null or activity_order between 1 and 9999);
 alter table public.projects add column if not exists award_type text check (award_type is null or award_type in ('winner', 'runner_up_1', 'runner_up_2', 'gold', 'silver', 'bronze', 'finalist', 'other'));
 alter table public.projects add column if not exists award_title text check (award_title is null or char_length(award_title) between 1 and 100);
 alter table public.projects add column if not exists award_rank integer check (award_rank is null or award_rank between 1 and 999);

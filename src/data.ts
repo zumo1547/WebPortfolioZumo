@@ -5,8 +5,8 @@ export const projectTags = [
   'ระดับนานาชาติ',
   'ระดับจังหวัด',
   'งานในโรงเรียน',
-  'เข้าร่วมกิจกรรม',
   'กิจกรรมเข้าร่วมมหาวิทยาลัย',
+  'เข้าร่วมกิจกรรม',
 ] as const
 
 export const techStack = [
@@ -36,6 +36,7 @@ export const fallbackProjects: Project[] = [
     award_type: null,
     award_title: null,
     award_rank: null,
+    activity_order: null,
     created_at: new Date(0).toISOString(),
     updated_at: new Date(0).toISOString(),
   },
@@ -50,6 +51,7 @@ export const fallbackProjects: Project[] = [
     award_type: null,
     award_title: null,
     award_rank: null,
+    activity_order: null,
     created_at: new Date(0).toISOString(),
     updated_at: new Date(0).toISOString(),
   },

@@ -45,7 +45,9 @@ import { projectImageUrl, supabase } from '../lib/supabase'
 import type { AwardType, Project, ProjectInput, ProjectLinks } from '../types'
 import './ProjectsPage.css'
 
-const emptyInput: ProjectInput = { slug: '', name: '', description: '', images: [], tags: ['งานในโรงเรียน'], links: {}, award_type: null, award_title: null, award_rank: null }
+const emptyInput: ProjectInput = { slug: '', name: '', description: '', images: [], tags: ['งานในโรงเรียน'], links: {}, award_type: null, award_title: null, award_rank: null, activity_order: null }
+
+const activityTags = ['กิจกรรมเข้าร่วมมหาวิทยาลัย', 'เข้าร่วมกิจกรรม']
 
 const normalizeSlug = (value: string) => value
   .trim()
@@ -287,7 +289,7 @@ export function ProjectsPage() {
         </div>
         <div className="project-result-meta">
           <div className="result-count" aria-live="polite">{loading ? 'กำลังโหลดผลงาน...' : `แสดง ${visible.length} จาก ${projects.length} โปรเจกต์`}</div>
-          <span><ArrowDownWideNarrow size={13} /> เรียงระดับสูงสุดและรางวัลก่อน</span>
+          <span><ArrowDownWideNarrow size={13} /> เรียงตามระดับ รางวัล และลำดับกิจกรรม</span>
         </div>
       </div>
 
@@ -491,6 +493,7 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
     award_type: project.award_type || null,
     award_title: project.award_title || null,
     award_rank: project.award_rank || null,
+    activity_order: project.activity_order ?? null,
   } : emptyInput)
   const [files, setFiles] = useState<File[]>([])
   const [saving, setSaving] = useState(false)
@@ -505,6 +508,7 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
     const uploaded: string[] = []
     try {
       if (!value.tags.length) throw new Error('กรุณาเลือก Tag อย่างน้อย 1 รายการ')
+      if (value.activity_order !== null && (!Number.isInteger(value.activity_order) || value.activity_order < 1 || value.activity_order > 9999)) throw new Error('ลำดับกิจกรรมต้องเป็นเลข 1–9999')
       if (value.images.length + files.length > 5) throw new Error('รูปภาพรวมกันได้สูงสุด 5 รูป')
       const cleanSlug = normalizeSlug(value.slug)
       if (!cleanSlug) throw new Error('กรุณากำหนดลิงก์โปรเจกต์เป็นภาษาอังกฤษ เช่น microfiber-filter')
@@ -557,10 +561,10 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
     }
   }
 
-  const toggleEditorTag = (tag: string) => setValue((current) => ({
-    ...current,
-    tags: current.tags.includes(tag) ? current.tags.filter((item) => item !== tag) : [...current.tags, tag],
-  }))
+  const toggleEditorTag = (tag: string) => setValue((current) => {
+    const tags = current.tags.includes(tag) ? current.tags.filter((item) => item !== tag) : [...current.tags, tag]
+    return { ...current, tags, activity_order: tags.some((item) => activityTags.includes(item)) ? current.activity_order : null }
+  })
 
   const toggleAward = () => setValue((current) => current.award_type ? {
     ...current,
@@ -671,6 +675,14 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
             return <label className={`editor-tag tag-${meta.tone} ${checked ? 'checked' : ''}`} key={tag}><input type="checkbox" checked={checked} onChange={() => toggleEditorTag(tag)} /><i>{checked ? '✓' : ''}</i><span><Icon size={14} aria-hidden="true" />{tag}</span></label>
           })}</div>
         </fieldset>
+
+        {value.tags.some((tag) => activityTags.includes(tag)) && <section className="editor-section activity-order-section">
+          <div className="editor-section-title"><ArrowDownWideNarrow size={15} aria-hidden="true" /><span>ลำดับในกลุ่มกิจกรรม</span></div>
+          <label htmlFor="activity-order">ลำดับที่ต้องการให้แสดง
+            <input id="activity-order" type="number" min={1} max={9999} step={1} value={value.activity_order ?? ''} onChange={(event) => setValue((current) => ({ ...current, activity_order: event.target.value === '' ? null : Number(event.target.value) }))} placeholder="เช่น 1" />
+          </label>
+          <small className="field-help">เลขน้อยขึ้นก่อน เช่น 1 → 2 → 3 · เว้นว่างจะเรียงตามรางวัลและวันที่เพิ่ม · กลุ่มมหาวิทยาลัยขึ้นก่อนกิจกรรมทั่วไปเสมอ</small>
+        </section>}
 
         <section className="editor-section award-editor-section">
           <div className="editor-section-title"><Trophy size={15} /><span>รางวัล / ผลการแข่งขัน</span></div>
