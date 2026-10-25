@@ -6,6 +6,7 @@ const tagWeight: Record<string, number> = {
   'ระดับจังหวัด': 3,
   'งานในโรงเรียน': 2,
   'เข้าร่วมกิจกรรม': 1,
+  'กิจกรรมเข้าร่วมมหาวิทยาลัย': 1,
 }
 
 const awardWeight: Record<AwardType, number> = {

@@ -6,6 +6,7 @@ export const projectTags = [
   'ระดับจังหวัด',
   'งานในโรงเรียน',
   'เข้าร่วมกิจกรรม',
+  'กิจกรรมเข้าร่วมมหาวิทยาลัย',
 ] as const
 
 export const techStack = [

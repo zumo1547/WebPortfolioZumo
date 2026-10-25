@@ -216,11 +216,13 @@
 .projects-page .tag-filters .tag-provincial { color: #86efac; border-color: rgba(34, 197, 94, .48); }
 .projects-page .tag-filters .tag-school { color: #f9a8d4; border-color: rgba(236, 72, 153, .48); }
 .projects-page .tag-filters .tag-activity { color: #fed7aa; border-color: rgba(251, 146, 60, .48); }
+.projects-page .tag-filters .tag-university { color: #a5f3fc; border-color: rgba(34, 211, 238, .48); }
 .projects-page .tag-filters .tag-national.active { background: rgba(99, 102, 241, .2); box-shadow: 0 0 16px rgba(99, 102, 241, .2); }
 .projects-page .tag-filters .tag-international.active { background: rgba(234, 179, 8, .17); box-shadow: 0 0 16px rgba(234, 179, 8, .18); }
 .projects-page .tag-filters .tag-provincial.active { background: rgba(34, 197, 94, .16); box-shadow: 0 0 16px rgba(34, 197, 94, .18); }
 .projects-page .tag-filters .tag-school.active { background: rgba(236, 72, 153, .16); box-shadow: 0 0 16px rgba(236, 72, 153, .2); }
 .projects-page .tag-filters .tag-activity.active { background: rgba(251, 146, 60, .16); box-shadow: 0 0 16px rgba(251, 146, 60, .18); }
+.projects-page .tag-filters .tag-university.active { background: rgba(34, 211, 238, .14); box-shadow: 0 0 16px rgba(34, 211, 238, .18); }
 .projects-page .tag-filters .clear-filter { color: #fca5a5; border-color: rgba(248, 113, 113, .24); }
 
 .projects-page .result-count {
@@ -358,6 +360,7 @@
 .project-tag.tag-provincial { color: #86efac; border-color: #22c55e; background: rgba(34, 197, 94, .13); box-shadow: 0 0 9px rgba(34, 197, 94, .16); }
 .project-tag.tag-school { color: #f9a8d4; border-color: #ec4899; background: rgba(236, 72, 153, .13); box-shadow: 0 0 9px rgba(236, 72, 153, .17); }
 .project-tag.tag-activity { color: #fed7aa; border-color: #fb923c; background: rgba(251, 146, 60, .13); box-shadow: 0 0 9px rgba(251, 146, 60, .17); }
+.project-tag.tag-university { color: #a5f3fc; border-color: #22d3ee; background: rgba(34, 211, 238, .12); box-shadow: 0 0 9px rgba(34, 211, 238, .16); }
 .project-tag.tag-default { color: #ddd6fe; border-color: #8b5cf6; background: rgba(139, 92, 246, .14); }
 
 .project-award {
@@ -946,11 +949,13 @@
 .editor-tag.checked.tag-provincial i { background: #16a34a; }
 .editor-tag.checked.tag-school i { background: #db2777; }
 .editor-tag.checked.tag-activity i { background: #ea580c; }
+.editor-tag.checked.tag-university i { background: #0891b2; }
 .editor-tag.checked.tag-national { color: #818cf8; border-color: #6366f1; background: rgba(99, 102, 241, .13); box-shadow: 0 0 14px rgba(99, 102, 241, .16); }
 .editor-tag.checked.tag-international { color: #eab308; border-color: #eab308; background: rgba(234, 179, 8, .11); box-shadow: 0 0 14px rgba(234, 179, 8, .14); }
 .editor-tag.checked.tag-provincial { color: #22c55e; border-color: #22c55e; background: rgba(34, 197, 94, .11); box-shadow: 0 0 14px rgba(34, 197, 94, .14); }
 .editor-tag.checked.tag-school { color: #ec4899; border-color: #ec4899; background: rgba(236, 72, 153, .11); box-shadow: 0 0 14px rgba(236, 72, 153, .15); }
 .editor-tag.checked.tag-activity { color: #fb923c; border-color: #fb923c; background: rgba(251, 146, 60, .11); box-shadow: 0 0 14px rgba(251, 146, 60, .14); }
+.editor-tag.checked.tag-university { color: #22d3ee; border-color: #22d3ee; background: rgba(34, 211, 238, .1); box-shadow: 0 0 14px rgba(34, 211, 238, .14); }
 .editor-tag span { display: inline-flex; align-items: center; gap: 6px; color: #c7c1d0; font-weight: 700; }
 
 .award-editor-section { overflow: hidden; }

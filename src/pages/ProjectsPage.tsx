@@ -7,6 +7,7 @@ import {
   ExternalLink,
   Github,
   Globe2,
+  GraduationCap,
   ImagePlus,
   Images,
   Landmark,
@@ -73,6 +74,7 @@ const tagMeta: Record<string, { icon: LucideIcon; tone: string }> = {
   'ระดับจังหวัด': { icon: Landmark, tone: 'provincial' },
   'งานในโรงเรียน': { icon: School, tone: 'school' },
   'เข้าร่วมกิจกรรม': { icon: Target, tone: 'activity' },
+  'กิจกรรมเข้าร่วมมหาวิทยาลัย': { icon: GraduationCap, tone: 'university' },
 }
 
 const safeExternalUrl = (value?: string) => {
@@ -274,7 +276,7 @@ export function ProjectsPage() {
           {isAdmin && <button className="button small add-project-button" onClick={() => setEditing('new')}><Plus size={17} /> เพิ่มโปรเจกต์</button>}
         </div>
 
-        <div className="tag-filters" aria-label="กรองตามระดับผลงาน">
+        <div className="tag-filters" aria-label="กรองตามประเภทผลงานและกิจกรรม">
           {projectTags.map((tag) => {
             const meta = tagMeta[tag]
             const Icon = meta.icon
