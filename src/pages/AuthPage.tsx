@@ -83,7 +83,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
       redirectTo.searchParams.set('provider', 'google')
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: redirectTo.toString() },
+        options: { redirectTo: redirectTo.toString(), queryParams: { prompt: 'select_account' } },
       })
       if (authError) throw authError
     } catch (caught) {
