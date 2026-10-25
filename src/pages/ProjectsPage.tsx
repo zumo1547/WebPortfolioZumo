@@ -555,26 +555,29 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
     }
   }
 
-  const toggleEditorTag = (tag: string) => setValue({ ...value, tags: value.tags.includes(tag) ? value.tags.filter((item) => item !== tag) : [...value.tags, tag] })
+  const toggleEditorTag = (tag: string) => setValue((current) => ({
+    ...current,
+    tags: current.tags.includes(tag) ? current.tags.filter((item) => item !== tag) : [...current.tags, tag],
+  }))
 
-  const toggleAward = () => setValue(value.award_type ? {
-    ...value,
+  const toggleAward = () => setValue((current) => current.award_type ? {
+    ...current,
     award_type: null,
     award_title: null,
     award_rank: null,
   } : {
-    ...value,
+    ...current,
     award_type: 'winner',
     award_title: 'ชนะเลิศ',
     award_rank: 1,
   })
 
-  const selectAwardType = (option: typeof awardOptions[number]) => setValue({
-    ...value,
+  const selectAwardType = (option: typeof awardOptions[number]) => setValue((current) => ({
+    ...current,
     award_type: option.value,
     award_title: option.title,
     award_rank: option.rank,
-  })
+  }))
 
   const moveImage = (index: number, offset: number) => {
     const nextIndex = index + offset
