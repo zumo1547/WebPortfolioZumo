@@ -11,6 +11,7 @@ const safeNextPath = (value: string | null) => {
 
 export function AuthCallbackPage() {
   const navigate = useNavigate()
+  const isGoogleSignIn = new URLSearchParams(window.location.search).get('provider') === 'google'
   const [error, setError] = useState('')
   const [confirmed, setConfirmed] = useState(false)
 
@@ -65,9 +66,9 @@ export function AuthCallbackPage() {
       <div className={`auth-orb ${error ? 'callback-error' : ''}`}>
         {error ? <XCircle /> : confirmed ? <CheckCircle2 /> : <ShieldCheck />}
       </div>
-      <h1>{error ? 'ยืนยันอีเมลไม่สำเร็จ' : confirmed ? 'ยืนยันอีเมลสำเร็จ' : 'กำลังยืนยันอีเมล'}</h1>
-      <p className="mono-label">// EMAIL VERIFICATION</p>
-      {!error && !confirmed && <div className="callback-progress"><span className="spinner" /><p>กำลังตรวจสอบลิงก์อย่างปลอดภัย...</p></div>}
+      <h1>{error ? (isGoogleSignIn ? 'เข้าสู่ระบบไม่สำเร็จ' : 'ยืนยันอีเมลไม่สำเร็จ') : confirmed ? (isGoogleSignIn ? 'เข้าสู่ระบบสำเร็จ' : 'ยืนยันอีเมลสำเร็จ') : (isGoogleSignIn ? 'กำลังเข้าสู่ระบบ' : 'กำลังยืนยันอีเมล')}</h1>
+      <p className="mono-label">// {isGoogleSignIn ? 'GOOGLE SIGN IN' : 'EMAIL VERIFICATION'}</p>
+      {!error && !confirmed && <div className="callback-progress"><span className="spinner" /><p>{isGoogleSignIn ? 'กำลังตรวจสอบบัญชี Google...' : 'กำลังตรวจสอบลิงก์อย่างปลอดภัย...'}</p></div>}
       {confirmed && <div className="notice success"><CheckCircle2 size={17} /> บัญชีพร้อมใช้งาน กำลังพาคุณกลับเข้าสู่เว็บไซต์</div>}
       {error && <>
         <div className="notice error"><XCircle size={17} /> {error}</div>
