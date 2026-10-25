@@ -539,7 +539,7 @@
   height: min(860px, 92dvh);
   max-height: 92dvh;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   padding: 0;
   overflow: hidden;
   border: 1px solid rgba(168, 85, 247, .32);
@@ -1179,10 +1179,9 @@
 }
 
 .projects-page .editor-actions {
-  position: sticky;
-  bottom: -26px;
+  position: relative;
   z-index: 4;
-  margin: 18px -24px -26px;
+  margin: 0;
   padding: 14px 24px;
   border-top: 1px solid rgba(168, 85, 247, .14);
   background: rgba(11, 7, 21, .95);
@@ -1257,7 +1256,7 @@
   .award-detail-fields { grid-template-columns: 1fr; }
   .award-preview { align-items: flex-start; flex-direction: column; }
   .projects-page .existing-images { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .projects-page .editor-actions { bottom: -22px; margin: 16px -13px -22px; padding: 12px 13px; }
+  .projects-page .editor-actions { padding: 12px 13px; }
   .projects-page .editor-actions .button { flex: 1; padding-inline: 10px; }
   .projects-page .editor-actions.confirming-delete { flex-direction: column; }
   .delete-confirmation { width: 100%; align-items: stretch; flex-direction: column; }

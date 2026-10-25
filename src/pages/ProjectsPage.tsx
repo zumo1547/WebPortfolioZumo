@@ -712,14 +712,14 @@ export function ProjectEditor({ project, userId, onClose, onSaved, initialDelete
 
         {error && <div className="notice error">{error}</div>}
         {savingStatus && <div className="image-processing-status" role="status"><span className="spinner" />{savingStatus}</div>}
-        <div className={`editor-actions ${deleteArmed ? 'confirming-delete' : ''}`}>
-          {project && !deleteArmed && <button type="button" className="button danger-button" onClick={() => { setDeleteArmed(true); setError('') }} disabled={saving}><Trash2 size={17} /> ลบโปรเจกต์</button>}
-          {project && deleteArmed && <div className="delete-confirmation" role="alertdialog" aria-label="ยืนยันลบโปรเจกต์">
-            <span><Trash2 size={16} /><b>ลบ “{project.name}” ถาวร?</b></span>
-            <div><button type="button" className="button secondary small" onClick={() => setDeleteArmed(false)} disabled={saving}>ยกเลิก</button><button type="button" className="button danger-button small" onClick={() => void remove()} disabled={saving}>ยืนยันลบ</button></div>
-          </div>}
-          <button className="button" disabled={saving || deleteArmed}>{saving ? 'กำลังประมวลผล...' : 'บันทึกโปรเจกต์'}</button>
-        </div>
+      </div>
+      <div className={`editor-actions ${deleteArmed ? 'confirming-delete' : ''}`}>
+        {project && !deleteArmed && <button type="button" className="button danger-button" onClick={() => { setDeleteArmed(true); setError('') }} disabled={saving}><Trash2 size={17} /> ลบโปรเจกต์</button>}
+        {project && deleteArmed && <div className="delete-confirmation" role="alertdialog" aria-label="ยืนยันลบโปรเจกต์">
+          <span><Trash2 size={16} /><b>ลบ “{project.name}” ถาวร?</b></span>
+          <div><button type="button" className="button secondary small" onClick={() => setDeleteArmed(false)} disabled={saving}>ยกเลิก</button><button type="button" className="button danger-button small" onClick={() => void remove()} disabled={saving}>ยืนยันลบ</button></div>
+        </div>}
+        <button className="button" disabled={saving || deleteArmed}>{saving ? 'กำลังประมวลผล...' : 'บันทึกโปรเจกต์'}</button>
       </div>
     </form>
   </div>
