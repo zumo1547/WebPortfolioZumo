@@ -409,7 +409,7 @@ export function ProjectsPage() {
 
       {!loading && !loadError && !visible.length && <div className="empty-state"><Search size={32} /><h2>ไม่พบโปรเจกต์ที่ค้นหา</h2><p>ลองเปลี่ยนคำค้นหาหรือเลือกแท็กอื่น</p><button className="button secondary small" onClick={clearFilters}>ล้างตัวกรอง</button></div>}
 
-      {selected && createPortal(<div className="projects-page modal-portal"><ProjectModal key={selected.id} project={selected} onClose={closeSelected} /></div>, document.body)}
+      {selected && createPortal(<div className={`projects-page modal-portal ${isAdmin ? '' : 'content-protected'}`}><ProjectModal key={selected.id} project={selected} onClose={closeSelected} /></div>, document.body)}
       {editing && isAdmin && user && createPortal(<div className="projects-page modal-portal"><ProjectEditor project={editing === 'new' ? null : editing} userId={user.id} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); void loadProjects() }} /></div>, document.body)}
       {deleting && isAdmin && user && createPortal(<div className="projects-page modal-portal"><ProjectEditor project={deleting} userId={user.id} initialDeleteArmed onClose={() => setDeleting(null)} onSaved={() => { setDeleting(null); void loadProjects() }} /></div>, document.body)}
     </section>
@@ -529,6 +529,7 @@ export function ProjectModal({ project, onClose }: { project: Project; onClose: 
             src={projectImageUrl(images[imageIndex])}
             alt={`${project.name} รูปที่ ${imageIndex + 1}`}
             decoding="async"
+            draggable={false}
             onError={(event) => {
               const fallback = projectImageUrl('/assets/Icon portfolio.png')
               if (event.currentTarget.src !== fallback) event.currentTarget.src = fallback

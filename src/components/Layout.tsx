@@ -2,6 +2,7 @@ import { Bell, Github, LayoutDashboard, LogIn, LogOut, Menu, Settings, X, Zap } 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { ContentProtection } from './ContentProtection'
 import { assetUrl, supabase } from '../lib/supabase'
 import type { ContactMessage } from '../types'
 import './Layout.css'
@@ -22,6 +23,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const { user, profile, isAdmin, signOut } = useAuth()
   const location = useLocation()
   const pageKey = location.pathname.startsWith('/projects') ? '/projects' : location.pathname
+  const protectPublicContent = !isAdmin && (location.pathname === '/' || location.pathname === '/about' || location.pathname.startsWith('/projects'))
 
   const openMenu = useCallback(() => {
     if (closeMenuTimer.current) window.clearTimeout(closeMenuTimer.current)
@@ -80,6 +82,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="app-shell">
+      <ContentProtection />
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
       <header className="site-header">
@@ -134,7 +137,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <Link to="/dashboard" onClick={() => setNewMessage(null)}><span>มีข้อความใหม่จากหน้า Contact</span><b>{newMessage.name}</b><small>{newMessage.subject}</small></Link>
         <button type="button" onClick={() => setNewMessage(null)} aria-label="ปิดการแจ้งเตือน"><X size={16} /></button>
       </aside>}
-      <main key={pageKey}>{children}</main>
+      <main key={pageKey} className={protectPublicContent ? 'content-protected' : undefined}>{children}</main>
       <footer className="site-footer">
         <div><Zap size={15} /> ZUMO DEV PORTFOLIO</div>
         <span>React · TypeScript · Supabase</span>

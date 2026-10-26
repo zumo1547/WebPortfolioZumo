@@ -82,3 +82,34 @@
   .admin-message-toast, .menu-button svg, .mobile-menu, .mobile-menu > * { animation: none !important; }
   .mobile-menu.is-open > * { opacity: 1; }
 }
+.content-protected {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.content-protected :is(input, textarea, select, [contenteditable="true"], [role="textbox"]) {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.content-protected img {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+
+.content-protected .project-cover::after,
+.content-protected .modal-image::after {
+  content: '© ZUMO.DEV';
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 4;
+  padding: 3px 7px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 5px;
+  background: rgba(8, 5, 16, .62);
+  color: rgba(255, 255, 255, .82);
+  font: 600 .55rem 'Share Tech Mono', monospace;
+  letter-spacing: .08em;
+  pointer-events: none;
+}
