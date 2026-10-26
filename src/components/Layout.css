@@ -113,3 +113,10 @@
   letter-spacing: .08em;
   pointer-events: none;
 }
+
+.content-protected .modal-image::after {
+  top: 78%;
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
